@@ -1,10 +1,14 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
+
 setup(
     name='knpy',        # Package name
     version='0.1',            # Version number
     packages=find_packages(), # Automatically find packages
-    install_requires=[],      # External dependencies (if any)
+    install_requires=required,      # External dependencies (if any)
     description='Package designed for machine learning in knot theory.',
     long_description=open('README.md').read(),  # Detailed description from README
     long_description_content_type='text/markdown',
