@@ -31,7 +31,7 @@ class Braid:
         return torch.from_numpy(self._braid)
     
     def show(self):
-        bv.Braid(*([self._n] + list(self._n))).draw
+        bv.Braid(*([self._n] + list(self._braid))).draw
 
     #Action functions from paper https://arxiv.org/pdf/2010.16263
 
