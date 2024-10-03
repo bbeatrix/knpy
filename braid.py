@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 import braidvisualiser as bv
 import warnings
 from typing import List
@@ -15,29 +16,48 @@ class Braid:
         self._braid = np.array(sigmas)
         assert not np.any(abs(self._braid) > self._n), "sigmas should be less than n_strands"
     
+    def values(self):
+        """
+        Returns (self._n,self._braid) values as tuple
+        #TODO Does it copies by default?    
+        """
+        return (self._n,self._braid)
+    
+    def to_torch(self):
+        """
+        Returns self._braid represented as torch.tensor 
+        #TODO Does it copies by default?
+        """
+        return torch.from_numpy(self._braid)
+    
+    def show(self):
+        bv.Braid(*([self._n] + list(self._n))).draw
+
+    #Action functions from paper https://arxiv.org/pdf/2010.16263
+
     def shift_left(self,inplace=True):
         """
         Shifts the braid left by one
         inplace: Whether to change the original braid as well.
         """
         left_shifted_braid = np.concatenate((self._braid[1:],self._braid[:1]))
+        self._braid = left_shifted_braid
+        """
         if (inplace):
             self._braid = left_shifted_braid
         
         return left_shifted_braid
-    
-    def shift_right(self,inplace=True):
+        """
+
+    def shift_right(self):
         """
         Shifts the braid left by one
         inplace: Whether to change the original braid as well.
         """
         right_shifted_braid = np.concatenate((self._braid[-1:],self._braid[:-1]))
-        if (inplace):
-            self._braid = right_shifted_braid
-
-        return right_shifted_braid
+        self._braid = right_shifted_braid
     
-    def conjugation(self,index,inplace=True):
+    def conjugation(self,index):
         """
         Conjugates the braid with sigma indexed by index
         index: int in within the interval [-(n-1),n-1], not equal to zero
@@ -47,11 +67,9 @@ class Braid:
         assert type(index) is int, "Provided index should be integer"
 
         conjugated_braid = np.concatenate((np.array([index]),self._braid,np.array([-index])))
-        if (inplace):
-            self._braid = conjugated_braid
-        return conjugated_braid
-    
-    def braid_relation1_and_shift_right(self,inplace=True):
+        self._braid = conjugated_braid
+
+    def braid_relation1_and_shift_right(self):
         """
         Applies braid relation 1 at the first possible position, than shifts that chunk to the right end
         """
@@ -61,18 +79,15 @@ class Braid:
         positions = np.where(position_left[:-1] & position_right[-2::-1])[0] #First common postition
         if (positions.shape[0] == 0):
             warnings.warn( "Operation can not be performed, original braid returned")
-            return self._braid
+            return
         position = positions[0]
         signs = np.ones(3)
         to_replace = self._braid[position:position+3]
         signs[to_replace<0] = -1
         replacement = (np.abs(to_replace) + np.array([1,-1,1])) * signs[::-1]
         braid_relation1_and_shift_right_braid = np.concatenate((self._braid[position+3:],self._braid[:position],replacement))
+        self._braid = braid_relation1_and_shift_right_braid
 
-        if(inplace):
-            self._braid = braid_relation1_and_shift_right_braid
-        return braid_relation1_and_shift_right_braid
-    
     def braid_relation2_and_shift_right(self, inplace=True):
         """
         Applies braid relation 2 at the first possible position, than shifts that chunk to the right end
@@ -83,9 +98,36 @@ class Braid:
             return self._braid
         position = positions[0]
         braid_relation2_and_shift_right_braid = np.concatenate((self._braid[position+2:],self._braid[:position],self._braid[(position+1):(position-1):-1]))
-        if(inplace):
-            self._braid = braid_relation2_and_shift_right_braid
-
-        return braid_relation2_and_shift_right_braid
-                
+        self._braid = braid_relation2_and_shift_right_braid
     
+
+    #Markov moves
+    def conjugation(self,index:int):
+        """
+        Performs conjugation move.
+        index: Index of the element before cut to be preformed.
+        """
+
+        conjugated_braid = np.concatenate((self._braid[index:],self._braid[:index]))
+        self._braid = conjugated_braid
+
+    def stabilization(self):
+        """
+        Performs stabilization move.
+        """
+        braid_stabilized = np.concatenate(self._braid,np.array(self._n))
+        
+        self._braid = braid_stabilized
+        self._n = self._n + 1
+
+    def destabilization(self):
+        """
+        Performs destabilization move.
+        """
+        if self._braid[-1] == self._n and (not np.any(self._braid[:-1] == self._n)) :
+            braid_destabilized = self._braid[:-1]
+            
+            self._braid = braid_destabilized
+            self._n = self._n - 1
+        else:
+            warnings.warn( "Operation can not be performed, original braid returned")   
