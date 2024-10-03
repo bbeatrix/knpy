@@ -78,7 +78,7 @@ class Braid:
         
         positions = np.where(position_left[:-1] & position_right[-2::-1])[0] #First common postition
         if (positions.shape[0] == 0):
-            warnings.warn( "Operation can not be performed, original braid returned")
+            warnings.warn( "Operation can not be performed, original braid remained")
             return
         position = positions[0]
         signs = np.ones(3)
@@ -94,12 +94,38 @@ class Braid:
         """
         positions = np.where(1<np.abs(np.diff(np.abs(self._braid))))[0]
         if (positions.shape[0] == 0):
-            warnings.warn( "Operation can not be performed, original braid returned")
-            return self._braid
+            warnings.warn( "Operation can not be performed, original braid remained")
+            return
         position = positions[0]
         braid_relation2_and_shift_right_braid = np.concatenate((self._braid[position+2:],self._braid[:position],self._braid[(position+1):(position-1):-1]))
         self._braid = braid_relation2_and_shift_right_braid
     
+    #Braid relations
+    def braid_relation1(self,index):
+        """
+        Perform first braid relation.
+        index: Where the chunk starts, on which operation can be done
+        """
+        assert index>=0 and index<(self._braid.shape[0]-2), "Invalid index"
+        if (abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and (abs(self._braid[index+1]) - abs(self._braid[index+2])) == 1:
+            signs = np.ones(3,)
+            signs[self._braid[index:index+3] < 0] = -1
+            self._braid[index:index+3] = (self._braid[index:index+3] + np.array([1,-1,1])) * signs[::-1]
+        else:
+            warnings.warn( "Operation can not be performed, original braid remained")
+            return
+
+    def braid_relation2(self,index):
+        """
+        Perform second braid relation.
+        index: Where the chunk starts, on which operation can be done
+        """
+        assert index>=0 and index<(self._braid.shape[0]-1), "Invalid index"
+        if abs(abs(self._braid[index]) - abs(self._braid[index+1]) >= 2):
+            self._braid[index], self._braid[index+1] = self._braid[index+1], self._braid[index]
+        else:
+            warnings.warn( "Operation can not be performed, original braid remained")
+            return
 
     #Markov moves
     def conjugation(self,index:int):
@@ -130,4 +156,4 @@ class Braid:
             self._braid = braid_destabilized
             self._n = self._n - 1
         else:
-            warnings.warn( "Operation can not be performed, original braid returned")   
+            warnings.warn( "Operation can not be performed, original braid remained")
