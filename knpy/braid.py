@@ -3,18 +3,23 @@ import torch
 import braidvisualiser as bv
 import warnings
 from typing import List
+from .data_utils import knots_in_braid_notation_dict
 
 
 class Braid:
-    def __init__(self,n_strands: int, sigmas: List[int]):
+    def __init__(self,sigmas: List[int] | str, notation_index: int = 0):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
-        n_strands: Number of strands int the braid
-        sigmas: Braid notation, e.g. [1,-1,2]
+        sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots (e. g. 11a,13n)
+        notation_index: If sigmas is a name of braid than it is possible that multiple notations are available to the same knot. notation_index says which one to choose from these.
+        #TODO 10_136 {{-1;-1;-2;3;-2;1;-2;-2;3;2;2};{-1;2;-1;2;3;-2;-2;-4;3;-4}}? Which one?
+        #TODO 11n_8,{{-1;-1;-2;1;-2;-1;3;-2;-2;-4;3;-4};{1;2;-1;2;3;-2;-1;-1;-2;-2;-3;-3;-2}}? Which one?
         """
-        self._n = n_strands
-        self._braid = np.array(sigmas)
-        assert not np.any(abs(self._braid) > self._n), "sigmas should be less than n_strands"
+        if type(sigmas) is str:
+            self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
+        else:
+            self._braid = np.array(sigmas)
+        self._n = np.max(np.abs(self._braid)) + 1
     
     def values(self):
         """
@@ -141,7 +146,7 @@ class Braid:
         """
         Performs stabilization move.
         """
-        braid_stabilized = np.concatenate(self._braid,np.array(self._n))
+        braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
         
         self._braid = braid_stabilized
         self._n = self._n + 1
@@ -150,7 +155,7 @@ class Braid:
         """
         Performs destabilization move.
         """
-        if self._braid[-1] == self._n and (not np.any(self._braid[:-1] == self._n)) :
+        if self._braid[-1] == self._n - 1 and (not np.any(self._braid[:-1] == self._n)) :
             braid_destabilized = self._braid[:-1]
             
             self._braid = braid_destabilized
