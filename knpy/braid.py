@@ -4,6 +4,7 @@ import braidvisualiser as bv
 import warnings
 from typing import List
 from .data_utils import knots_in_braid_notation_dict
+from .illegal_transformation_exception import IllegalTransformationException
 
 
 class Braid:
@@ -78,6 +79,7 @@ class Braid:
         """
         Applies braid relation 1 at the first possible position, than shifts that chunk to the right end
         """
+        #TODO When is performable
         position_left = (1 == np.diff(np.abs(self._braid)))
         position_right = (1 == np.diff(np.abs(self._braid[::-1])))
         
@@ -111,14 +113,15 @@ class Braid:
         Perform first braid relation.
         index: Where the chunk starts, on which operation can be done
         """
+        #TODO Error
+        #TODO Opposite direction should work as well
         assert index>=0 and index<(self._braid.shape[0]-2), "Invalid index"
-        if (abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and (abs(self._braid[index+1]) - abs(self._braid[index+2])) == 1:
+        if  self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
             signs[self._braid[index:index+3] < 0] = -1
             self._braid[index:index+3] = (self._braid[index:index+3] + np.array([1,-1,1])) * signs[::-1]
         else:
-            warnings.warn( "Operation can not be performed, original braid remained")
-            return
+            raise IllegalTransformationException
 
     def braid_relation2(self,index):
         """
@@ -126,11 +129,10 @@ class Braid:
         index: Where the chunk starts, on which operation can be done
         """
         assert index>=0 and index<(self._braid.shape[0]-1), "Invalid index"
-        if abs(abs(self._braid[index]) - abs(self._braid[index+1]) >= 2):
+        if self.is_braid_relation2_performable(index):
             self._braid[index], self._braid[index+1] = self._braid[index+1], self._braid[index]
         else:
-            warnings.warn( "Operation can not be performed, original braid remained")
-            return
+            raise IllegalTransformationException
 
     #Markov moves
     def conjugation(self,index:int):
@@ -155,10 +157,28 @@ class Braid:
         """
         Performs destabilization move.
         """
-        if self._braid[-1] == self._n - 1 and (not np.any(self._braid[:-1] == self._n)) :
+        if self.is_destabilization_performable() :
             braid_destabilized = self._braid[:-1]
-            
             self._braid = braid_destabilized
             self._n = self._n - 1
         else:
-            warnings.warn( "Operation can not be performed, original braid remained")
+            raise IllegalTransformationException
+
+    #Chech whether a move is performable or not
+    def is_braid_relation1_performable(self,index):
+       return abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and abs(abs(self._braid[index+1]) - abs(self._braid[index+2])) == 1
+
+    def is_braid_relation2_performable(self,index):
+        return abs(abs(self._braid[index]) - abs(self._braid[index+1]) >= 2)
+
+    def is_destabilization_performable(self):
+        return self._braid[-1] == self._n - 1 and (not np.any(self._braid[:-1] == self._n - 1))
+    
+    def performable_moves(self, move: str, index: int = None) -> bool:
+        """
+        Checks if a move is performable.
+        move: The name of the move to check, e.g., "shift_left", "braid_relation1", etc.
+        index: Optional index parameter required for some moves.
+        Returns: True if the move is performable, otherwise False.
+        """
+        #TODO
