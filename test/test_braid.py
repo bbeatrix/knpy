@@ -1,4 +1,6 @@
 import pytest
+from ..knpy.braid import Braid
+from ..knpy.illegal_transformation_exception import IllegalTransformationException
 
 class TestBraidClassBraidRelations:
     def test_stabilization(self):
