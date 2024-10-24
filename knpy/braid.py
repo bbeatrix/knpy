@@ -270,19 +270,21 @@ class Braid:
 
     #Chech whether a move is performable or not
     def is_braid_relation1_performable(self,index):
-       """
-       Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
-       """
-       return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1
+        """
+        Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
+        """
+        if index >= 0:
+            index -= self._braid.shape[0]
+        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and !(np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
     
     def braid_relation1_performable_indices(self):
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
         """
-        diff_left = np.diff(np.abs(self._braid))
-        diff_right = np.diff(np.abs(self._braid[::-1]))
-
-        positions = np.where((np.abs(diff_left[:-1]) == 1) & (diff_left[:-1] == diff_right[-2::-1]))[0]
+        positions = np.array([])
+        for index in range(0,n):
+            if is_braid_relation1_performable(self,index):
+                positions.append(index)
         return positions
     def is_braid_relation_1_and_shift_right_performable(self):
         """
