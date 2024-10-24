@@ -162,6 +162,8 @@ class Braid:
         """
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` has the same sign and all `∓` has the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
         index: Where the chunk starts, on which operation can be done
+
+        *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
         """
         #TODO Error
         #TODO Opposite direction should work as well
