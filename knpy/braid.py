@@ -97,7 +97,7 @@ class Braid:
 
     def braid_relation1_and_shift_right(self,inplace = True):
         """
-        Applies braid relation 1 at the first possible position, than shifts that chunk to the right end
+        Applies braid relation 1 at the first possible position, than shifts that chunk to the right end. See documentation of member function `braid_relation1` for details.
         """
         #TODO When is performable
         
@@ -160,7 +160,7 @@ class Braid:
     #Braid relations
     def braid_relation1(self,index,inplace=True):
         """
-        Perform first braid relation.
+        Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` has the same sign and all `∓` has the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
         index: Where the chunk starts, on which operation can be done
         """
         #TODO Error
@@ -268,15 +268,24 @@ class Braid:
 
     #Chech whether a move is performable or not
     def is_braid_relation1_performable(self,index):
+       """
+       Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
+       """
        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1
     
     def braid_relation1_performable_indices(self):
+        """
+        Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
+        """
         diff_left = np.diff(np.abs(self._braid))
         diff_right = np.diff(np.abs(self._braid[::-1]))
 
         positions = np.where((np.abs(diff_left[:-1]) == 1) & (diff_left[:-1] == diff_right[-2::-1]))[0]
         return positions
     def is_braid_relation_1_and_shift_right_performable(self):
+        """
+        See documentation of member function `braid_relation1` for details.
+        """
         return self.braid_relation1_performable_indices().shape[0] != 0
 
     def is_braid_relation2_performable(self,index):
