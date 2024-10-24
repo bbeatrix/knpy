@@ -185,16 +185,19 @@ class TestBraidClassBraidRelationsBraidRelation1:
         assert braid.is_braid_relation1_performable(index = 0)
         assert braid.is_braid_relation1_performable(index = 3) 
         assert braid.is_braid_relation1_performable(index = 4)
-        assert braid.is_braid_relation1_performable(index = 4)
 
     def test_is_braid_relation1_performable_false1(self):
         braid = Braid([9,3,3,1,1,1])
         assert not braid.is_braid_relation1_performable(index = 3)
 
-    
     def test_is_braid_relation1_performable_false2(self):
         braid = Braid([9,3,3,5,3,1])
         assert not braid.is_braid_relation1_performable(index = 0)
+    
+    def test_is_braid_relation1_performable_mixed(self):
+        braid = Braid([2, 1, 1, -2, 1])
+        for i in range(len(braid.values()[1])):
+            assert braid.is_braid_relation1_performable(i) == (i == 3)
     
     def test_is_braid_relation1_performable_indices_empty(self):
         braid = Braid([])
@@ -221,6 +224,22 @@ class TestBraidClassBraidRelationsBraidRelation1:
         with pytest.raises(IllegalTransformationException):
             braid.braid_relation1(index=0)
 
+    def test_braid_relation1_all_same_sign(self):
+        braid = Braid([3, 2, 1, 2])
+        assert (braid.braid_relation1(1, inplace=False) == [3, 1, 2, 1]).all()
+
+    def test_braid_relation1_last_sign_different(self):
+        braid = Braid([3, 2, 1, -2])
+        assert (braid.braid_relation1(1, inplace=False) == [3, -1, 2, 1]).all()
+
+    def test_braid_relation1_circular(self):
+        braid = Braid([1, -2, 3, 2])
+        assert (braid.braid_relation1(3, inplace=False) == [2, 1, 3, -1]).all()
+
+    def test_braid_relation1_not_inplace(self):
+        braid = Braid([3, 2, 1, 2])
+        braid.braid_relation1(1)
+        assert braid == Braid([3, 1, 2, 1])
 
 class TestBraidClassBraidRelationsBraidRelation2:
     
