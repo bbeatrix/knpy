@@ -19,6 +19,8 @@ class Braid:
         """
         if type(sigmas) is str:
             self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
+        elif type(sigmas) is np.ndarray:
+            self._braid = sigmas
         else:
             if not all(isinstance(x, int) for x in sigmas):
                 raise InvalidBraidException
