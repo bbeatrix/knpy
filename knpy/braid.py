@@ -101,10 +101,16 @@ class Braid:
 
     def braid_relation2(self,index):
         """
-        Perform second braid relation.
-        index: Where the chunk starts, on which operation can be done
+        Perform second braid relation. Maps between the chunks `[i, j] ↔ [j, i]` if `abs(abs(i) - abs(j)) >= 2`.
+
+        The elements of the chuck must be distict, so the braid must consist of at least 2 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).        
+
+        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
         if self.is_braid_relation2_performable(index):
+            # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
+            if index >= 0:
+                index -= len(self._braid)
             transformed_braid = self._braid.copy()
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
 
@@ -200,10 +206,21 @@ class Braid:
         return np.array(positions)
 
     def is_braid_relation2_performable(self,index):
-        return self._braid.shape[0] != 0 and 0 <= index and index + 1 < self._braid.shape[0] and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
+        if index >= len(self._braid):
+            raise IndexOutOfRangeException(f"index = {index} too large, at least the number of crossings = {len(self._braid)}")
+        if index < -len(self._braid):
+            raise IndexOutOfRangeException(f"index = {index} too small, smaller than number of crossings * (-1) = {-len(self._braid)}")
+        
+        # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
+        if index >= 0:
+            index -= len(self._braid)
+        return self._braid.shape[0] != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
     
     def braid_relation2_performable_indices(self):
-        positions = np.where(1<np.abs(np.diff(np.abs(self._braid))))[0]
+        if len(self._braid) == 0:
+            return np.array([])
+
+        positions = np.where(1<np.abs(np.diff(np.abs(self._braid),append=abs(self._braid[0]))))[0]
         return positions
 
     def is_conjugation_performable(self,value, index):
