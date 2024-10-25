@@ -1,5 +1,5 @@
 [tool.pylint.main]
-load-plugins = 'pylint-pytest'
+load-plugins = 'pylint_pytest'
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = ["raw-checker-failed",
