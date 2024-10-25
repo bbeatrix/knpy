@@ -9,7 +9,7 @@ from .exceptions import IllegalTransformationException, InvalidBraidException, I
 
 
 class Braid:
-    def __init__(self,sigmas: List[int] | str, notation_index: int = 0):
+    def __init__(self,sigmas: np.ndarray | List[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
         sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots (e. g. 11a,13n)
@@ -20,7 +20,10 @@ class Braid:
         if type(sigmas) is str:
             self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
         elif type(sigmas) is np.ndarray:
-            self._braid = sigmas
+            if copy_sigmas:
+                self._braid = sigmas.copy()
+            else:
+                self._braid = sigmas
         else:
             if not all(isinstance(x, int) for x in sigmas):
                 raise InvalidBraidException
@@ -37,9 +40,8 @@ class Braid:
     def values(self):
         """
         Returns (self._n,self._braid) values as tuple
-        #TODO Does it copies by default?    
         """
-        return (self._n,self._braid)
+        return (self._n,self._braid.copy())
     
     def to_torch(self):
         """
@@ -52,59 +54,36 @@ class Braid:
         bv.Braid(*([self._n] + list(self._braid))).draw()
 
     #Action functions from paper https://arxiv.org/pdf/2010.16263
-
-    def shift_left(self,inplace=True):
-        """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
-        """
-        left_shifted_braid = self.shift_left_with_amount(amount=1,inplace=False)
-        if inplace:
-            self._braid = left_shifted_braid
-        else:
-            return left_shifted_braid
-
-    def shift_right(self,inplace=True):
-        """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
-        """
-        right_shifted_braid = self.shift_right_with_amount(amount=1,inplace=False)
-        if inplace:
-            self._braid = right_shifted_braid
-        else:
-            return right_shifted_braid
         
-    def shift_left_with_amount(self,amount,inplace=True):
+    def shift_left(self, amount=1):
         """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
+        Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
+
+        if amount >= len(self._braid) or amount <= -len(self._braid):
+            raise IllegalTransformationException(f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})")
+
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
-        if inplace:
-            self._braid = left_shifted_braid
-        else:
-            return left_shifted_braid
+        return Braid(left_shifted_braid, copy_sigmas=False)
     
-    def shift_right_with_amount(self,amount,inplace=True):
+    def shift_right(self, amount=1):
         """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
+        Shifts the crossings of the braid right. Same as shifting left by the negative amount.
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
-        right_shifted_braid = np.concatenate((self._braid[-amount:],self._braid[:-amount]))
-        if inplace:
-            self._braid = right_shifted_braid
-        else:
-            return right_shifted_braid
+
+        if amount >= len(self._braid) or amount <= -len(self._braid):
+            raise IllegalTransformationException(f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})")
+
+        return self.shift_left(-amount)
 
     #Braid relations
-    def braid_relation1(self,index,inplace=True):
+    def braid_relation1(self,index):
         """
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
 
         The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
-
-        *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
 
         index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
@@ -115,10 +94,8 @@ class Braid:
             signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
             transformed_braid = self._braid.copy()
             transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
-            if inplace:
-                self._braid = transformed_braid
-            else:
-                return transformed_braid
+
+            return Braid(transformed_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
@@ -134,9 +111,10 @@ class Braid:
             # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
             if index >= 0:
                 index -= len(self._braid)
-            transformed_braid = self._braid
+            transformed_braid = self._braid.copy()
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
-            return Braid(transformed_braid)
+
+            return Braid(transformed_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
@@ -158,11 +136,12 @@ class Braid:
                 conjugated_braid = np.concatenate((np.array([-value]),self._braid,np.array([value])))
             else:
                 conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
-            return conjugated_braid
+
+            return Braid(conjugated_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
-    def stabilization(self,inverse = False,inplace = True):
+    def stabilization(self,inverse = False):
         """
         Performs stabilization move.
         """
@@ -170,46 +149,33 @@ class Braid:
             braid_stabilized = np.concatenate((self._braid,np.array([-self._n])))
         else:
             braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
-        if inplace:
-            self._braid = braid_stabilized
-            self._n = self._n + 1
-        else:
-            return braid_stabilized
 
-    def destabilization(self,inplace = True):
+        return Braid(braid_stabilized, copy_sigmas=False)
+
+    def destabilization(self):
         """
         Performs destabilization move.
         """
         if self.is_destabilization_performable() :
-            braid_destabilized = self._braid[:-1]
-            if inplace:
-                self._braid = braid_destabilized
-                self._n = self._n - 1
-            else:
-                return braid_destabilized
+            braid_destabilized = self._braid[:-1].copy()
+
+            return Braid(braid_destabilized, copy_sigmas=False)
 
         else:
             raise IllegalTransformationException
     
-    def remove_sigma_inverse_pair(self,index,inplace=True):
+    def remove_sigma_inverse_pair(self,index):
         """
         Remove consequtive inverse on a given place
         """
         if self.is_remove_sigma_inverse_pair_performable(index):
-            transformed_braid = self._braid
+            transformed_braid = self._braid.copy()
             mask = np.ones(self._braid.shape,dtype="bool")
             mask[index] = False
             mask[(index+1)%self._braid.shape[0]] = False
             transformed_braid = transformed_braid[mask]
 
-            if inplace:
-                self._braid = transformed_braid
-                if(self._braid.shape[0] == 0):
-                    self._n = 1
-                else:
-                    self._n = np.max(np.abs(self._braid)) + 1
-            else:
-                return transformed_braid
+            return Braid(transformed_braid)
         else:
             raise IllegalTransformationException
 
@@ -267,8 +233,11 @@ class Braid:
         return self._braid.shape[0] != 0 and self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0
     
     def remove_sigma_inverse_pair_performable_indices(self):
+        if len(self._braid) < 2:
+            return np.array([])
+
         original_braid = self._braid
-        shifted_braid = self.shift_left(inplace = False)
+        shifted_braid = self.shift_left()._braid
 
         indices = np.where((original_braid + shifted_braid) == 0)[0]
 
