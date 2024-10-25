@@ -227,10 +227,9 @@ class TestBraidClassBraidRelationsBraidRelation1:
         assert performable_indices[0] == 0
 
     def test_braid_relation1_preformable_indices_multiple(self):
-        braid = Braid([-5,4,-5,1,2,1,-2,-1])
+        braid = Braid([-5,-4,-5,1,2,1,-2,-1])
         performable_indices = braid.braid_relation1_performable_indices()
-        assert performable_indices.shape[0] == 4
-        assert performable_indices[0] == 0 and performable_indices[1] == 3
+        assert np.array_equal(performable_indices, np.array([0, 3, 4, 5]))
 
     def test_braid_relation1_empty(self):
         braid = Braid([])
