@@ -380,7 +380,11 @@ class TestBraidClassBraidRelationsShifts:
 
         with pytest.raises(IllegalTransformationException):
             braid.shift_left(5)
+
+        with pytest.raises(IllegalTransformationException):
             braid.shift_left(-5)
+
+        with pytest.raises(IllegalTransformationException):
             braid.shift_left(9999)
 
     def test_shift_right(self):
@@ -391,7 +395,11 @@ class TestBraidClassBraidRelationsShifts:
 
         with pytest.raises(IllegalTransformationException):
             braid.shift_right(5)
+
+        with pytest.raises(IllegalTransformationException):
             braid.shift_right(-5)
+        
+        with pytest.raises(IllegalTransformationException):
             braid.shift_right(9999)
 
     def test_shift_left_multiple_same(self):
