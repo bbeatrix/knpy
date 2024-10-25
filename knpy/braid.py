@@ -133,7 +133,7 @@ class Braid:
             raise IllegalTransformationException
 
     #Markov moves
-    def conjugation(self,index1,index2):
+    def conjugation(self,value,index):
         """
         Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the index index2
         index1: int in within the interval [-(n-1),n-1], not equal to zero
@@ -144,12 +144,12 @@ class Braid:
         assert abs(index)<self._n, f"Index should be less than {self._n}"
         assert type(index) is int, "Provided index should be integer"
         """
-        if self.is_conjugation_performable(index1, index2):
+        if self.is_conjugation_performable(value, index):
             
-            if index2 == self._braid.shape[0]:
-                conjugated_braid = np.concatenate((np.array([-index1]),self._braid,np.array([index1])))
+            if index == self._braid.shape[0] + 1:
+                conjugated_braid = np.concatenate((np.array([-value]),self._braid,np.array([value])))
             else:
-                conjugated_braid = np.concatenate((self._braid[:index2], np.array([index1, -index1]), self._braid[index2:]))
+                conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
             return conjugated_braid
         else:
             raise IllegalTransformationException
@@ -224,8 +224,8 @@ class Braid:
         positions = np.where(1<np.abs(np.diff(np.abs(self._braid))))[0]
         return positions
 
-    def is_conjugation_performable(self,index1, index2):
-        return index1 != 0 and self._n>abs(index1) and 0 <= index2 and index2 <= self._n 
+    def is_conjugation_performable(self,value, index):
+        return value != 0 and self._n>abs(value) and 0 <= index and index <= self._braid.shape[0] + 1
     
     def is_destabilization_performable(self):
         return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
