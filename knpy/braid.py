@@ -135,14 +135,13 @@ class Braid:
 
         index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
-        #TODO Error
-        #TODO Opposite direction should work as well
-        #assert index>=0 and index<(self._braid.shape[0]-2), "Invalid index"
-        if  self.is_braid_relation1_performable(index):
+        if self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
-            signs[self._braid[index:index+3] < 0] = -1
-            transformed_braid = self._braid 
-            transformed_braid[index:index+3] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
+            if index > 0:
+                index -= len(self._braid)
+            signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
+            transformed_braid = self._braid
+            transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
             if inplace:
                 self._braid = transformed_braid
             else:
