@@ -242,6 +242,8 @@ class Braid:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
         """
+        if len(self._braid) < 3:
+            return False
         if index >= 0:
             index -= self._braid.shape[0]
         return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
