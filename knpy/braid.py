@@ -20,7 +20,7 @@ class Braid:
         if type(sigmas) is str:
             self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
         elif type(sigmas) is np.ndarray:
-            self._braid = sigmas
+            self._braid = sigmas.copy()
         else:
             if not all(isinstance(x, int) for x in sigmas):
                 raise InvalidBraidException
@@ -37,9 +37,8 @@ class Braid:
     def values(self):
         """
         Returns (self._n,self._braid) values as tuple
-        #TODO Does it copies by default?    
         """
-        return (self._n,self._braid)
+        return (self._n,self._braid.copy())
     
     def to_torch(self):
         """
@@ -74,13 +73,11 @@ class Braid:
         return self.shift_left(-amount)
 
     #Braid relations
-    def braid_relation1(self,index,inplace=True):
+    def braid_relation1(self,index):
         """
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
 
         The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
-
-        *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
 
         index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
@@ -91,25 +88,21 @@ class Braid:
             signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
             transformed_braid = self._braid.copy()
             transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
-            if inplace:
-                self._braid = transformed_braid
-            else:
-                return transformed_braid
+
+            return Braid(transformed_braid)
         else:
             raise IllegalTransformationException
 
-    def braid_relation2(self,index,inplace=True):
+    def braid_relation2(self,index):
         """
         Perform second braid relation.
         index: Where the chunk starts, on which operation can be done
         """
         if self.is_braid_relation2_performable(index):
-            transformed_braid = self._braid
+            transformed_braid = self._braid.copy()
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
-            if inplace:
-                self._braid = transformed_braid
-            else:
-                return transformed_braid
+
+            return Braid(transformed_braid)
         else:
             raise IllegalTransformationException
 
@@ -131,11 +124,12 @@ class Braid:
                 conjugated_braid = np.concatenate((np.array([-value]),self._braid,np.array([value])))
             else:
                 conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
-            return conjugated_braid
+
+            return Braid(conjugated_braid)
         else:
             raise IllegalTransformationException
 
-    def stabilization(self,inverse = False,inplace = True):
+    def stabilization(self,inverse = False):
         """
         Performs stabilization move.
         """
@@ -143,46 +137,33 @@ class Braid:
             braid_stabilized = np.concatenate((self._braid,np.array([-self._n])))
         else:
             braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
-        if inplace:
-            self._braid = braid_stabilized
-            self._n = self._n + 1
-        else:
-            return braid_stabilized
 
-    def destabilization(self,inplace = True):
+        return Braid(braid_stabilized)
+
+    def destabilization(self):
         """
         Performs destabilization move.
         """
         if self.is_destabilization_performable() :
-            braid_destabilized = self._braid[:-1]
-            if inplace:
-                self._braid = braid_destabilized
-                self._n = self._n - 1
-            else:
-                return braid_destabilized
+            braid_destabilized = self._braid[:-1].copy()
+
+            return Braid(braid_destabilized)
 
         else:
             raise IllegalTransformationException
     
-    def remove_sigma_inverse_pair(self,index,inplace=True):
+    def remove_sigma_inverse_pair(self,index):
         """
         Remove consequtive inverse on a given place
         """
         if self.is_remove_sigma_inverse_pair_performable(index):
-            transformed_braid = self._braid
+            transformed_braid = self._braid.copy()
             mask = np.ones(self._braid.shape,dtype="bool")
             mask[index] = False
             mask[(index+1)%self._braid.shape[0]] = False
             transformed_braid = transformed_braid[mask]
 
-            if inplace:
-                self._braid = transformed_braid
-                if(self._braid.shape[0] == 0):
-                    self._n = 1
-                else:
-                    self._n = np.max(np.abs(self._braid)) + 1
-            else:
-                return transformed_braid
+            return Braid(transformed_braid)
         else:
             raise IllegalTransformationException
 

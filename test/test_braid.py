@@ -60,21 +60,21 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
 
     def test_stabilization_empty(self):
         braid = Braid([])
-        braid.stabilization()
+        braid = braid.stabilization()
         assert braid.values()[0] == 2
         assert braid.values()[1][-1] == 1
         assert len(braid.values()[1]) == 1
 
     def test_stabilization(self):
         braid = Braid([1, -2, 3])
-        braid.stabilization()
+        braid = braid.stabilization()
         assert braid.values()[0] == 5
         assert braid.values()[1][-1] == 4
         assert len(braid.values()[1]) == 4
 
     def test_stabilization_inverse(self):
         braid = Braid([1, -2, 3])
-        braid.stabilization(inverse=True)
+        braid = braid.stabilization(inverse=True)
         assert braid.values()[0] == 5
         assert braid.values()[1][-1] == -4
         assert len(braid.values()[1]) == 4
@@ -82,25 +82,25 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_destabilization_empty(self):
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid.destabilization() 
+            braid = braid.destabilization() 
 
 
     def test_destabilization(self):
         braid = Braid([1, -2, 3])
-        braid.destabilization()
+        braid = braid.destabilization()
         assert braid.values()[0] == 3
         assert len(braid.values()[1]) == 2
     
     def test_destabilization_inverse(self):
         braid = Braid([1, -2, -3])
-        braid.destabilization()
+        braid = braid.destabilization()
         assert braid.values()[0] == 3
         assert len(braid.values()[1]) == 2
 
     def test_destabilization_exception(self):
         braid = Braid([-3 ,1, -2, 3])
         with pytest.raises(IllegalTransformationException):
-            braid.destabilization() 
+            braid = braid.destabilization() 
 
 class TestBraidClassBraidRelationsConjugation:
     def test_is_conjugation_performable_empty(self):
@@ -143,55 +143,52 @@ class TestBraidClassBraidRelationsConjugation:
     def test_conjugation_empty(self):
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid.conjugation(value=0, index=0) 
+            braid = braid.conjugation(value=0, index=0) 
 
     def test_conjugation(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=1, index=5)
-        print(values)
+        values = braid.conjugation(value=1, index=5).values()[1]
         assert values[0] == -1 and values[-1] == 1
     
     def test_conjugation1(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=2, index=4)
-        print(values)
+        values = braid.conjugation(value=2, index=4).values()[1]
         assert values[-2] == 2 and values[-1] == -2
 
     def test_conjugation2(self):
         braid = Braid([-1, -2, 5, 6])
-        values = braid.conjugation(value=-4, index=5)
-        print(values)
+        values = braid.conjugation(value=-4, index=5).values()[1]
         assert values[0] == 4 and values[-1] == -4
 
     def test_conjugation3(self):
         braid = Braid([-1, -2, 7, 6])
-        values = braid.conjugation(value=5, index=4)
+        values = braid.conjugation(value=5, index=4).values()[1]
         assert values[-2] == 5 and values[-1] == -5
 
     def test_conjugation_inverse(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=-4, index=4)
+        values = braid.conjugation(value=-4, index=4).values()[1]
         assert values[-2] == -4 and values[-1] == 4
     
     def test_conjugation_inbetween1(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=1, index=0)
+        values = braid.conjugation(value=1, index=0).values()[1]
         assert values[0] == 1 and values[1] == -1
     
     def test_conjugation_inbetween2(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=2, index=3)
+        values = braid.conjugation(value=2, index=3).values()[1]
         assert values[3] == 2 and values[4] == -2
 
     def test_conjugation_inverse_inbetween(self):
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=-4, index=2)
+        values = braid.conjugation(value=-4, index=2).values()[1]
         assert values[2] == -4 and values[3] == 4
 
     def test_conjugation_exception(self):
         braid = Braid([-1, -2, 3, 4])
         with pytest.raises(IllegalTransformationException):
-            braid.conjugation(value=5, index=4)
+            braid = braid.conjugation(value=5, index=4)
 
 class TestBraidClassBraidRelationsBraidRelation1:
     
@@ -277,43 +274,32 @@ class TestBraidClassBraidRelationsBraidRelation1:
     def test_braid_relation1_empty(self):
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid.braid_relation1(index=0)
+            braid = braid.braid_relation1(index=0)
 
     def test_braid_relation1_all_same_sign(self):
         braid = Braid([3, 2, 1, 2])
-        assert (braid.braid_relation1(1, inplace=False) == [3, 1, 2, 1]).all()
+        assert (braid.braid_relation1(1).values()[1] == [3, 1, 2, 1]).all()
 
     def test_braid_relation1_last_sign_different(self):
         braid = Braid([3, 2, 1, -2])
-        assert (braid.braid_relation1(1, inplace=False) == [3, -1, 2, 1]).all()
+        assert (braid.braid_relation1(1).values()[1] == [3, -1, 2, 1]).all()
 
     def test_braid_relation1_circular(self):
         braid = Braid([1, -2, 3, 2])
-        assert (braid.braid_relation1(3, inplace=False) == [2, 1, 3, -1]).all()
+        assert (braid.braid_relation1(3).values()[1] == [2, 1, 3, -1]).all()
 
     def test_braid_relation1_negative_index_inside(self):
         braid = Braid([3, 2, 1, 2])
-        assert (braid.braid_relation1(-3, inplace=False) == [3, 1, 2, 1]).all()
+        assert (braid.braid_relation1(-3).values()[1] == [3, 1, 2, 1]).all()
 
     def test_braid_relation1_negative_index_boundary(self):
         braid = Braid([1, 2, 3, 2])
-        assert (braid.braid_relation1(-1, inplace=False) == [2, 1, 3, 1]).all()
+        assert (braid.braid_relation1(-1).values()[1] == [2, 1, 3, 1]).all()
 
     def test_braid_relation1_short(self):
         braid = Braid([1, 2])
         with pytest.raises(IllegalTransformationException):
             braid.braid_relation1(0)
-
-    def test_braid_relation1_inplace(self):
-        braid = Braid([3, 2, 1, 2])
-        braid.braid_relation1(1)
-        assert braid == Braid([3, 1, 2, 1])
-    
-    def test_braid_relation1_not_inplace_does_not_modify(self):
-        braid = Braid([3, 2, 1, 2])
-        new_braid = braid.braid_relation1(1, inplace=False)
-        assert (new_braid == [3, 1, 2, 1]).all()
-        assert braid == Braid([3, 2, 1, 2])
 
 class TestBraidClassBraidRelationsBraidRelation2:
     
