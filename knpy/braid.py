@@ -130,6 +130,8 @@ class Braid:
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
         index: Where the chunk starts, on which operation can be done
 
+        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings.
+
         *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
         """
         #TODO Error
