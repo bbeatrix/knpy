@@ -203,6 +203,11 @@ class TestBraidClassBraidRelationsBraidRelation1:
         for i in range(len(braid.values()[1])):
             assert braid.is_braid_relation1_performable(i) == (i in [1, 3])
     
+    def test_is_braid_relation1_performable_mixed_negative(self):
+        braid = Braid([2, 2, 1, -2, 1])
+        for i in range(len(braid.values()[1]), 0):
+            assert braid.is_braid_relation1_performable(i) == (i in [-4, -2])
+    
     def test_is_braid_relation1_performable_indices_empty(self):
         braid = Braid([])
         assert braid.braid_relation1_performable_indices().shape[0] == 0
@@ -243,6 +248,14 @@ class TestBraidClassBraidRelationsBraidRelation1:
     def test_braid_relation1_circular(self):
         braid = Braid([1, -2, 3, 2])
         assert (braid.braid_relation1(3, inplace=False) == [2, 1, 3, -1]).all()
+
+    def test_braid_relation1_negative_index_inside(self):
+        braid = Braid([3, 2, 1, 2])
+        assert (braid.braid_relation1(-3, inplace=False) == [3, 1, 2, 1]).all()
+
+    def test_braid_relation1_negative_index_boundary(self):
+        braid = Braid([1, 2, 3, 2])
+        assert (braid.braid_relation1(-1, inplace=False) == [2, 1, 3, 1]).all()
 
     def test_braid_relation1_short(self):
         braid = Braid([1, 2])
