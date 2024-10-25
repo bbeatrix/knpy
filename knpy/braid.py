@@ -128,11 +128,12 @@ class Braid:
     def braid_relation1(self,index,inplace=True):
         """
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
-        index: Where the chunk starts, on which operation can be done
 
-        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings.
+        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
 
         *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
+
+        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
         #TODO Error
         #TODO Opposite direction should work as well
