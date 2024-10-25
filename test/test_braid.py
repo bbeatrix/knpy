@@ -249,7 +249,7 @@ class TestBraidClassBraidRelationsBraidRelation1:
         with pytest.raises(IllegalTransformationException):
             braid.braid_relation1(0)
 
-    def test_braid_relation1_not_inplace(self):
+    def test_braid_relation1_inplace(self):
         braid = Braid([3, 2, 1, 2])
         braid.braid_relation1(1)
         assert braid == Braid([3, 1, 2, 1])
