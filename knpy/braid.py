@@ -55,7 +55,7 @@ class Braid:
     def shift_left(self, amount=1):
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
-        amount: in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
 
         if amount >= len(self._braid) or amount < -len(self._braid):
@@ -67,7 +67,7 @@ class Braid:
     def shift_right(self, amount=1):
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
-        amount: in the range (-n, n] where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
 
         return self.shift_left(-amount)

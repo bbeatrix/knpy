@@ -375,19 +375,24 @@ class TestBraidClassBraidRelationsShifts:
         assert braid.shift_left(3) == Braid([4, 5, 1, 2, 3])
         assert braid.shift_left(4) == Braid([5, 1, 2, 3, 4])
 
-        for i in range(-5, 0):
+        for i in range(-4, 0):
             assert braid.shift_left(i) == braid.shift_left(i + 5)
 
         with pytest.raises(IllegalTransformationException):
             braid.shift_left(5)
-            braid.shift_left(-6)
+            braid.shift_left(-5)
             braid.shift_left(9999)
 
     def test_shift_right(self):
         braid = Braid([1, 2, 3, 4, 5])
 
-        for i in range(-4, 6):
+        for i in range(-4, 5):
             assert braid.shift_right(i) == braid.shift_left(-i)
+
+        with pytest.raises(IllegalTransformationException):
+            braid.shift_right(5)
+            braid.shift_right(-5)
+            braid.shift_right(9999)
 
     def test_shift_left_multiple_same(self):
         braid = Braid([1, 2, 1, 2])
