@@ -241,6 +241,8 @@ class Braid:
     def is_braid_relation1_performable(self,index):
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
+
+        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
         if len(self._braid) < 3:
             return False
@@ -251,6 +253,8 @@ class Braid:
     def braid_relation1_performable_indices(self):
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
+
+        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
         positions = []
         for index in range(len(self._braid)):
