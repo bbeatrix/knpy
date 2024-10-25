@@ -253,6 +253,12 @@ class TestBraidClassBraidRelationsBraidRelation1:
         braid = Braid([3, 2, 1, 2])
         braid.braid_relation1(1)
         assert braid == Braid([3, 1, 2, 1])
+    
+    def test_braid_relation1_not_inplace_does_not_modify(self):
+        braid = Braid([3, 2, 1, 2])
+        new_braid = braid.braid_relation1(1, inplace=False)
+        assert (new_braid == [3, 1, 2, 1]).all()
+        assert braid == Braid([3, 2, 1, 2])
 
 class TestBraidClassBraidRelationsBraidRelation2:
     
