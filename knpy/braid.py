@@ -96,7 +96,7 @@ class Braid:
             self._braid = right_shifted_braid
         else:
             return right_shifted_braid
-    
+
     #Braid relations
     def braid_relation1(self,index,inplace=True):
         """
@@ -216,8 +216,6 @@ class Braid:
 
         positions = np.where((np.abs(diff_left[:-1]) == 1) & (diff_left[:-1] == diff_right[-2::-1]))[0]
         return positions
-    def is_braid_relation_1_and_shift_right_performable(self):
-        return self.braid_relation1_performable_indices().shape[0] != 0
 
     def is_braid_relation2_performable(self,index):
         return self._braid.shape[0] != 0 and  abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
@@ -225,9 +223,6 @@ class Braid:
     def braid_relation2_performable_indices(self):
         positions = np.where(1<np.abs(np.diff(np.abs(self._braid))))[0]
         return positions
-    
-    def is_braid_relation_2_and_shift_right_performable(self):
-        return self.braid_relation2_performable_indices().shape[0] != 0
 
     def is_conjugation_performable(self,index):
         return index != 0 and self._n>abs(index)
