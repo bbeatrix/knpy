@@ -59,7 +59,7 @@ class Braid:
         """
 
         if amount >= len(self._braid) or amount < -len(self._braid):
-            raise ValueError(f"amount = {amount} not in range [{-len(self._braid)}, {len(self._braid)})")
+            raise IllegalTransformationException(f"amount = {amount} not in range [{-len(self._braid)}, {len(self._braid)})")
 
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
         return Braid(left_shifted_braid)

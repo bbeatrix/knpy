@@ -346,22 +346,22 @@ class TestBraidClassBraidRelationsShifts:
     
     def test_shift_left_empty(self):
         braid = Braid([])
-        with pytest.raises(ValueError):
+        with pytest.raises(IllegalTransformationException):
             braid.shift_left()
     
     def test_shift_right_empty(self):
         braid = Braid([])
-        with pytest.raises(ValueError):
+        with pytest.raises(IllegalTransformationException):
             braid.shift_right()
     
     def test_shift_left_with_amount_empty(self):
         braid = Braid([])
-        with pytest.raises(ValueError):
+        with pytest.raises(IllegalTransformationException):
             braid.shift_left(amount=0)
     
     def test_shift_right_with_amount_empty(self):
         braid = Braid([])
-        with pytest.raises(ValueError):
+        with pytest.raises(IllegalTransformationException):
             braid.shift_right(amount=0)
 
     def test_shift_left(self):
@@ -378,7 +378,7 @@ class TestBraidClassBraidRelationsShifts:
         for i in range(-5, 0):
             assert braid.shift_left(i) == braid.shift_left(i + 5)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(IllegalTransformationException):
             braid.shift_left(5)
             braid.shift_left(-6)
             braid.shift_left(9999)
