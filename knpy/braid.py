@@ -1,15 +1,17 @@
+from typing import Callable
 import numpy as np
 import torch
 import braidvisualiser as bv
 import warnings
 from functools import partial
-from typing import List
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
+type BraidNotation = np.ndarray
+type BraidTransformation = Callable[[], 'Braid']
 
 class Braid:
-    def __init__(self,sigmas: np.ndarray | List[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
+    def __init__(self,sigmas: np.ndarray | list[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
         sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots (e. g. 11a,13n)
@@ -17,15 +19,16 @@ class Braid:
         #TODO 10_136 {{-1;-1;-2;3;-2;1;-2;-2;3;2;2};{-1;2;-1;2;3;-2;-2;-4;3;-4}}? Which one?
         #TODO 11n_8,{{-1;-1;-2;1;-2;-1;3;-2;-2;-4;3;-4};{1;2;-1;2;3;-2;-1;-1;-2;-2;-3;-3;-2}}? Which one?
         """
-        if type(sigmas) is str:
+        self._braid: BraidNotation
+        if isinstance(sigmas, str):
             self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
-        elif type(sigmas) is np.ndarray:
+        elif isinstance(sigmas, np.ndarray):
             if copy_sigmas:
                 self._braid = sigmas.copy()
             else:
                 self._braid = sigmas
         else:
-            if not all(isinstance(x, int) for x in sigmas):
+            if not all(isinstance(x, (int, np.integer)) for x in sigmas):
                 raise InvalidBraidException
             self._braid = np.array(sigmas)
         
@@ -37,25 +40,25 @@ class Braid:
         else:
             self._n = np.max(np.abs(self._braid)) + 1
     
-    def values(self):
+    def values(self) -> tuple[int, BraidNotation]:
         """
         Returns (self._n,self._braid) values as tuple
         """
         return (self._n,self._braid.copy())
     
-    def to_torch(self):
+    def to_torch(self) -> torch.Tensor:
         """
         Returns self._braid represented as torch.tensor 
         #TODO Does it copies by default?
         """
         return torch.from_numpy(self._braid)
     
-    def show(self):
+    def show(self) -> None:
         bv.Braid(*([self._n] + list(self._braid))).draw()
 
     #Action functions from paper https://arxiv.org/pdf/2010.16263
         
-    def shift_left(self, amount=1):
+    def shift_left(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
@@ -67,7 +70,7 @@ class Braid:
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
         return Braid(left_shifted_braid, copy_sigmas=False)
     
-    def shift_right(self, amount=1):
+    def shift_right(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
@@ -79,7 +82,7 @@ class Braid:
         return self.shift_left(-amount)
 
     #Braid relations
-    def braid_relation1(self,index):
+    def braid_relation1(self,index: int) -> 'Braid':
         """
         Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
 
@@ -99,7 +102,7 @@ class Braid:
         else:
             raise IllegalTransformationException
 
-    def braid_relation2(self,index):
+    def braid_relation2(self,index: int) -> 'Braid':
         """
         Perform second braid relation. Maps between the chunks `[i, j] ↔ [j, i]` if `abs(abs(i) - abs(j)) >= 2`.
 
@@ -119,7 +122,7 @@ class Braid:
             raise IllegalTransformationException
 
     #Markov moves
-    def conjugation(self,value,index):
+    def conjugation(self,value: int,index: int) -> 'Braid':
         """
         Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the index index2
         index1: int in within the interval [-(n-1),n-1], not equal to zero
@@ -141,7 +144,7 @@ class Braid:
         else:
             raise IllegalTransformationException
 
-    def stabilization(self,inverse = False):
+    def stabilization(self,inverse: bool = False) -> 'Braid':
         """
         Performs stabilization move.
         """
@@ -152,7 +155,7 @@ class Braid:
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
-    def destabilization(self):
+    def destabilization(self) -> 'Braid':
         """
         Performs destabilization move.
         """
@@ -164,7 +167,7 @@ class Braid:
         else:
             raise IllegalTransformationException
     
-    def remove_sigma_inverse_pair(self,index):
+    def remove_sigma_inverse_pair(self,index: int) -> 'Braid':
         """
         Remove consequtive inverse on a given place (last and first element are consequtive)
         index: the smaller index (or when the pair is the last and first then it is the last index)
@@ -184,7 +187,7 @@ class Braid:
 
 
     #Chech whether a move is performable or not
-    def is_braid_relation1_performable(self,index):
+    def is_braid_relation1_performable(self,index: int) -> bool:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
 
@@ -196,7 +199,7 @@ class Braid:
             index -= self._braid.shape[0]
         return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
     
-    def braid_relation1_performable_indices(self):
+    def braid_relation1_performable_indices(self) -> np.ndarray:
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
 
@@ -208,7 +211,7 @@ class Braid:
                 positions.append(index)
         return np.array(positions)
 
-    def is_braid_relation2_performable(self,index):
+    def is_braid_relation2_performable(self,index: int) -> bool:
         if index >= len(self._braid):
             raise IndexOutOfRangeException(f"index = {index} too large, at least the number of crossings = {len(self._braid)}")
         if index < -len(self._braid):
@@ -219,23 +222,23 @@ class Braid:
             index -= len(self._braid)
         return self._braid.shape[0] != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
     
-    def braid_relation2_performable_indices(self):
+    def braid_relation2_performable_indices(self) -> np.ndarray:
         if len(self._braid) == 0:
             return np.array([])
 
         positions = np.where(1<np.abs(np.diff(np.abs(self._braid),append=abs(self._braid[0]))))[0]
         return positions
 
-    def is_conjugation_performable(self,value, index):
+    def is_conjugation_performable(self,value: int, index: int) -> bool:
         return value != 0 and self._n>abs(value) and 0 <= index and index <= self._braid.shape[0] + 1
     
-    def is_destabilization_performable(self):
+    def is_destabilization_performable(self) -> bool:
         return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
     
-    def is_remove_sigma_inverse_pair_performable(self,index):
+    def is_remove_sigma_inverse_pair_performable(self,index: int) -> bool:
         return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
     
-    def remove_sigma_inverse_pair_performable_indices(self):
+    def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
         if len(self._braid) < 2:
             return np.array([])
 
@@ -246,41 +249,41 @@ class Braid:
 
         return indices
     
-    def performable_moves(self) -> bool:
+    def performable_moves(self) -> list[BraidTransformation]:
         """
         Checks if a move is performable.
         move: The name of the move to check, e.g., "shift_left", "braid_relation1", etc.
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves = [self.shift_left,self.shift_right,self.stabilization,partial(self.stabilization,inverse=True)] #Always performable
+        performable_moves: list[BraidTransformation] = [self.shift_left,self.shift_right,self.stabilization,partial(self.stabilization,inverse=True)] #Always performable
 
         if self.is_destabilization_performable():
             performable_moves.append(self.destabilization)
         
         conjugation_indices = list(range(-self._n+1,0)) + list(range(1,self._n))
-        conjugation_performable_moves = [partial(self.conjugation,index=i) for i in conjugation_indices]
+        conjugation_performable_moves: list[BraidTransformation] = [partial(self.conjugation,index=i) for i in conjugation_indices]
 
         performable_moves = performable_moves + conjugation_performable_moves
 
         braid_relation1_indices = self.braid_relation1_performable_indices()
-        braid_relation1_performable_moves = [partial(self.braid_relation1,index=i) for i in braid_relation1_indices]
+        braid_relation1_performable_moves: list[BraidTransformation] = [partial(self.braid_relation1,index=i) for i in braid_relation1_indices]
 
         performable_moves = performable_moves + braid_relation1_performable_moves
 
         braid_relation2_indices = self.braid_relation2_performable_indices()
-        braid_relation2_performable_moves = [partial(self.braid_relation2,index=i) for i in braid_relation2_indices]
+        braid_relation2_performable_moves: list[BraidTransformation] = [partial(self.braid_relation2,index=i) for i in braid_relation2_indices]
 
         performable_moves = performable_moves + braid_relation2_performable_moves
 
         braid_remove_sigma_and_inverse = self.remove_sigma_inverse_pair_performable_indices()
-        braid_remove_sigma_and_inverse_moves = [partial(self.remove_sigma_inverse_pair,index=i) for i in braid_remove_sigma_and_inverse]
+        braid_remove_sigma_and_inverse_moves: list[BraidTransformation] = [partial(self.remove_sigma_inverse_pair,index=i) for i in braid_remove_sigma_and_inverse]
 
         performable_moves = performable_moves + braid_remove_sigma_and_inverse_moves
 
         return performable_moves
 
-    def __eq__(self, value):
+    def __eq__(self, value: object) -> bool:
         if not isinstance(value, Braid):
             return NotImplemented
         return self._n == value._n and np.array_equal(self._braid, value._braid)
