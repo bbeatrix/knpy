@@ -9,7 +9,7 @@ from .exceptions import IllegalTransformationException, InvalidBraidException, I
 
 
 class Braid:
-    def __init__(self,sigmas: List[int] | str, notation_index: int = 0):
+    def __init__(self,sigmas: np.ndarray | List[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
         sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots (e. g. 11a,13n)
@@ -20,7 +20,10 @@ class Braid:
         if type(sigmas) is str:
             self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
         elif type(sigmas) is np.ndarray:
-            self._braid = sigmas.copy()
+            if copy_sigmas:
+                self._braid = sigmas.copy()
+            else:
+                self._braid = sigmas
         else:
             if not all(isinstance(x, int) for x in sigmas):
                 raise InvalidBraidException
@@ -62,7 +65,7 @@ class Braid:
             raise IllegalTransformationException(f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})")
 
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
-        return Braid(left_shifted_braid)
+        return Braid(left_shifted_braid, copy_sigmas=False)
     
     def shift_right(self, amount=1):
         """
@@ -92,7 +95,7 @@ class Braid:
             transformed_braid = self._braid.copy()
             transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
 
-            return Braid(transformed_braid)
+            return Braid(transformed_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
@@ -105,7 +108,7 @@ class Braid:
             transformed_braid = self._braid.copy()
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
 
-            return Braid(transformed_braid)
+            return Braid(transformed_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
@@ -128,7 +131,7 @@ class Braid:
             else:
                 conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
 
-            return Braid(conjugated_braid)
+            return Braid(conjugated_braid, copy_sigmas=False)
         else:
             raise IllegalTransformationException
 
@@ -141,7 +144,7 @@ class Braid:
         else:
             braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
 
-        return Braid(braid_stabilized)
+        return Braid(braid_stabilized, copy_sigmas=False)
 
     def destabilization(self):
         """
@@ -150,7 +153,7 @@ class Braid:
         if self.is_destabilization_performable() :
             braid_destabilized = self._braid[:-1].copy()
 
-            return Braid(braid_destabilized)
+            return Braid(braid_destabilized, copy_sigmas=False)
 
         else:
             raise IllegalTransformationException
