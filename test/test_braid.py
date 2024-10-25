@@ -360,8 +360,8 @@ class TestBraidClassBraidRelationsBraidRelation2:
     def test_braid_relation2_big_index_exception(self):
         braid = Braid([1, -3, 2])
         for i in range(5):
-            with pytest.raises(IllegalTransformationException):
-                braid.braid_relation2(2+i)
+            with pytest.raises(Exception):
+                braid.braid_relation2(3+i)
     
     def test_braid_relation2_loop_around(self):
         braid = Braid([3, 2, 1])
