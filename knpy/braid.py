@@ -125,7 +125,8 @@ class Braid:
     def braid_relation2(self,index):
         """
         Perform second braid relation.
-        index: Where the chunk starts, on which operation can be done
+
+        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
         if self.is_braid_relation2_performable(index):
             if index >= 0 and index < len(self._braid):
