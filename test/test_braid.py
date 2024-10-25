@@ -195,9 +195,9 @@ class TestBraidClassBraidRelationsBraidRelation1:
         assert not braid.is_braid_relation1_performable(index = 0)
     
     def test_is_braid_relation1_performable_mixed(self):
-        braid = Braid([2, 1, 1, -2, 1])
+        braid = Braid([2, 2, 1, -2, 1])
         for i in range(len(braid.values()[1])):
-            assert braid.is_braid_relation1_performable(i) == (i == 3)
+            assert braid.is_braid_relation1_performable(i) == (i in [1, 3])
     
     def test_is_braid_relation1_performable_indices_empty(self):
         braid = Braid([])
