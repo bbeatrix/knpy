@@ -320,3 +320,7 @@ class Braid:
 
         return performable_moves
 
+    def __eq__(self, value):
+        if not isinstance(value, Braid):
+            return NotImplemented
+        return self._n == value._n and np.array_equal(self._braid, value._braid)
