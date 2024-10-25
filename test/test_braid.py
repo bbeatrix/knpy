@@ -407,7 +407,9 @@ class TestBraidClassBraidRelationsShifts:
 
         assert braid.shift_left() == Braid([2, 1, 2, 1])
         assert braid.shift_left(3) == Braid([2, 1, 2, 1])
-        assert braid.shift_left(-4) == braid
+        assert braid.shift_left(-3) == Braid([2, 1, 2, 1])
+        with pytest.raises(IllegalTransformationException):
+            assert braid.shift_left(-4) == braid
     
     def test_shift_doest_modify_original(self):
         braid = Braid([1, 2, 3])

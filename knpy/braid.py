@@ -58,8 +58,8 @@ class Braid:
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
 
-        if amount >= len(self._braid) or amount < -len(self._braid):
-            raise IllegalTransformationException(f"amount = {amount} not in range [{-len(self._braid)}, {len(self._braid)})")
+        if amount >= len(self._braid) or amount <= -len(self._braid):
+            raise IllegalTransformationException(f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})")
 
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
         return Braid(left_shifted_braid)
@@ -69,6 +69,9 @@ class Braid:
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
+
+        if amount >= len(self._braid) or amount <= -len(self._braid):
+            raise IllegalTransformationException(f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})")
 
         return self.shift_left(-amount)
 
