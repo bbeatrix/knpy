@@ -140,7 +140,7 @@ class Braid:
             if index > 0:
                 index -= len(self._braid)
             signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
-            transformed_braid = self._braid
+            transformed_braid = self._braid.copy()
             transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
             if inplace:
                 self._braid = transformed_braid
