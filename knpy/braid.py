@@ -52,50 +52,26 @@ class Braid:
         bv.Braid(*([self._n] + list(self._braid))).draw()
 
     #Action functions from paper https://arxiv.org/pdf/2010.16263
-
-    def shift_left(self,inplace=True):
-        """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
-        """
-        left_shifted_braid = self.shift_left_with_amount(amount=1,inplace=False)
-        if inplace:
-            self._braid = left_shifted_braid
-        else:
-            return left_shifted_braid
-
-    def shift_right(self,inplace=True):
-        """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
-        """
-        right_shifted_braid = self.shift_right_with_amount(amount=1,inplace=False)
-        if inplace:
-            self._braid = right_shifted_braid
-        else:
-            return right_shifted_braid
         
-    def shift_left_with_amount(self,amount,inplace=True):
+    def shift_left(self, amount=1):
         """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
+        Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
+        amount: in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
+
+        if amount >= len(self._braid) or amount < -len(self._braid):
+            raise ValueError(f"amount = {amount} not in range [{-len(self._braid)}, {len(self._braid)})")
+
         left_shifted_braid = np.concatenate((self._braid[amount:],self._braid[:amount]))
-        if inplace:
-            self._braid = left_shifted_braid
-        else:
-            return left_shifted_braid
+        return Braid(left_shifted_braid)
     
-    def shift_right_with_amount(self,amount,inplace=True):
+    def shift_right(self, amount=1):
         """
-        Shifts the braid left by one
-        inplace: Whether to change the original braid as well.
+        Shifts the crossings of the braid right. Same as shifting left by the negative amount.
+        amount: in the range (-n, n] where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
-        right_shifted_braid = np.concatenate((self._braid[-amount:],self._braid[:-amount]))
-        if inplace:
-            self._braid = right_shifted_braid
-        else:
-            return right_shifted_braid
+
+        return self.shift_left(-amount)
 
     #Braid relations
     def braid_relation1(self,index,inplace=True):
@@ -253,8 +229,11 @@ class Braid:
         return self._braid.shape[0] != 0 and self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0
     
     def remove_sigma_inverse_pair_performable_indices(self):
+        if len(self._braid) < 2:
+            return np.array([])
+
         original_braid = self._braid
-        shifted_braid = self.shift_left(inplace = False)
+        shifted_braid = self.shift_left()._braid
 
         indices = np.where((original_braid + shifted_braid) == 0)[0]
 
