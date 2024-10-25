@@ -1,0 +1,29 @@
+[tool.pylint.main]
+load-plugins = 'pylint-pytest'
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["raw-checker-failed",
+        "bad-inline-option",
+        "locally-disabled",
+        "file-ignored",
+        "suppressed-message",
+        "useless-suppression",
+        "deprecated-pragma",
+        "use-symbolic-message-instead",
+        "use-implicit-booleaness-not-comparison-to-string",
+        "use-implicit-booleaness-not-comparison-to-zero",
+        "multiple-imports",
+        "wrong-import-order",
+        "invalid-name",
+        "missing-module-docstring",
+        "missing-class-docstring",
+        "missing-function-docstring",
+        "no-else-return",
+        "too-many-locals",
+        "too-few-public-methods",
+        "unspecified-encoding",
+        "too-many-arguments",
+        "too-many-branches",
+        "too-many-statements",
+        "too-many-instance-attributes"]
+
