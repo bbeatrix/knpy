@@ -122,18 +122,17 @@ class Braid:
         else:
             raise IllegalTransformationException
 
-    def braid_relation2(self,index,inplace=True):
+    def braid_relation2(self,index):
         """
         Perform second braid relation.
         index: Where the chunk starts, on which operation can be done
         """
         if self.is_braid_relation2_performable(index):
+            if index >= 0 and index < len(self._braid):
+                index -= len(self._braid)
             transformed_braid = self._braid
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
-            if inplace:
-                self._braid = transformed_braid
-            else:
-                return transformed_braid
+            return Braid(transformed_braid)
         else:
             raise IllegalTransformationException
 
