@@ -1,6 +1,6 @@
 import sys
 import os
-
+sys.path.append("..")
 import pytest
 import numpy as np
 #IMPORTANT: knpy should be installed first
@@ -106,49 +106,75 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
 class TestBraidClassBraidRelationsConjugation:
     def test_is_conjugation_performable_empty(self):
         braid = Braid([])
-        assert not braid.is_conjugation_performable(index=1)
+        assert not braid.is_conjugation_performable(index1=1, index2=0)
+        assert not braid.is_conjugation_performable(index1=1, index2=1)
 
     def test_is_conjugation_performable_true1(self):
         braid = Braid([1, -2, 3, 4])
-        assert braid.is_conjugation_performable(index=1)
+        assert braid.is_conjugation_performable(index1=1, index2=4)
     
     def test_is_conjugation_performable_true2(self):
         braid = Braid([1, -2, 3, 4])
-        assert braid.is_conjugation_performable(index=-2)
+        assert braid.is_conjugation_performable(index1=-2, index2=4)
 
+    def test_is_conjugation_performable_inbetween_true1(self):
+        braid = Braid([1, -2, 3, 4])
+        assert braid.is_conjugation_performable(index1=1, index2=2)
+    
     def test_is_conjugation_performable_false1(self):
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(index=0)
+        assert not braid.is_conjugation_performable(index1=0, index2=4)
     
     def test_is_conjugation_performable_false2(self):
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(index=5)
+        assert not braid.is_conjugation_performable(index1=-5, index2=12)
 
     def test_is_conjugation_performable_false3(self):
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(index=5)
+        assert not braid.is_conjugation_performable(index1=5, index2=4)
     
+    def test_is_conjugation_performable_inbetween_false1(self):
+        braid = Braid([1, -2, 3, 4])
+        assert not braid.is_conjugation_performable(index1=1, index2=-1)
+    
+    def test_is_conjugation_performable_inbetween_false2(self):
+        braid = Braid([1, -2, 3, 4])
+        assert not braid.is_conjugation_performable(index1=1, index2=6)
+
     def test_conjugation_empty(self):
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid.conjugation(index=0) 
+            braid.conjugation(index1=0, index2=0) 
 
     def test_conjugation(self):
         braid = Braid([-1, -2, 3, 4])
-        braid.conjugation(index=1)
-        values = braid.values()[1]
-        assert values[0] == 1 and values[-1] == -1
+        values = braid.conjugation(index1=1, index2=4)
+        assert values[0] == -1 and values[-1] == 1
     
     def test_conjugation_inverse(self):
         braid = Braid([-1, -2, 3, 4])
-        braid.conjugation(index=-4)
-        values = braid.values()[1]
-        assert values[0] == -4 and values[-1] == 4
+        values = braid.conjugation(index1=-4, index2=4)
+        assert values[0] == 4 and values[-1] == -4
+    
+    def test_conjugation_inbetween1(self):
+        braid = Braid([-1, -2, 3, 4])
+        values = braid.conjugation(index1=1, index2=0)
+        assert values[0] == 1 and values[1] == -1
+    
+    def test_conjugation_inbetween2(self):
+        braid = Braid([-1, -2, 3, 4])
+        values = braid.conjugation(index1=2, index2=3)
+        assert values[3] == 2 and values[4] == -2
+
+    def test_conjugation_inverse_inbetween(self):
+        braid = Braid([-1, -2, 3, 4])
+        values = braid.conjugation(index1=-4, index2=2)
+        assert values[2] == -4 and values[3] == 4
 
     def test_conjugation_exception(self):
         braid = Braid([-1, -2, 3, 4])
         with pytest.raises(IllegalTransformationException):
-            braid.conjugation(index=5)
+            braid.conjugation(index1=5, index2=4)
 
 class TestBraidClassBraidRelationsBraidRelation1:
     

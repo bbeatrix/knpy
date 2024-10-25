@@ -197,22 +197,24 @@ class Braid:
             raise IllegalTransformationException
 
     #Markov moves
-    def conjugation(self,index,inplace = True):
+    def conjugation(self,index1,index2):
         """
-        Conjugates the braid with sigma indexed by index
-        index: int in within the interval [-(n-1),n-1], not equal to zero
+        Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the index index2
+        index1: int in within the interval [-(n-1),n-1], not equal to zero
+        index2: int in within the interval [0, n]
         """
         """
         assert index != 0, "Index should not be zero"
         assert abs(index)<self._n, f"Index should be less than {self._n}"
         assert type(index) is int, "Provided index should be integer"
         """
-        if self.is_conjugation_performable(index):
-            conjugated_braid = np.concatenate((np.array([index]),self._braid,np.array([-index])))
-            if(inplace):
-                self._braid = conjugated_braid
+        if self.is_conjugation_performable(index1, index2):
+            
+            if index2 == self._braid.shape[0]:
+                conjugated_braid = np.concatenate((np.array([-index1]),self._braid,np.array([index1])))
             else:
-                return conjugated_braid
+                conjugated_braid = np.concatenate((self._braid[:index2], np.array([index1, -index1]), self._braid[index2:]))
+            return conjugated_braid
         else:
             raise IllegalTransformationException
 
@@ -291,8 +293,8 @@ class Braid:
     def is_braid_relation_2_and_shift_right_performable(self):
         return self.braid_relation2_performable_indices().shape[0] != 0
 
-    def is_conjugation_performable(self,index):
-        return index != 0 and self._n>abs(index)
+    def is_conjugation_performable(self,index1, index2):
+        return index1 != 0 and self._n>abs(index1) and 0 <= index2 and index2 <= self._n 
     
     def is_destabilization_performable(self):
         return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
