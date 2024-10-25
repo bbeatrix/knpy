@@ -188,25 +188,21 @@ class Braid:
         else:
             raise IllegalTransformationException
     
-    def remove_sigma_inverse_pair(self,index,inplace=True):
+    def remove_sigma_inverse_pair(self,index):
         """
-        Remove consequtive inverse on a given place
+        Remove consequtive inverse on a given place (last and first element are consequtive)
+        index: the smaller index (or when the pair is the last and first then it is the last index)
         """
         if self.is_remove_sigma_inverse_pair_performable(index):
-            transformed_braid = self._braid
-            mask = np.ones(self._braid.shape,dtype="bool")
-            mask[index] = False
-            mask[(index+1)%self._braid.shape[0]] = False
-            transformed_braid = transformed_braid[mask]
-
-            if inplace:
-                self._braid = transformed_braid
-                if(self._braid.shape[0] == 0):
-                    self._n = 1
-                else:
-                    self._n = np.max(np.abs(self._braid)) + 1
+            if index == 0:
+                modified_braid = self._braid[2:]
+            elif index == self._braid.shape[0] - 2:
+                modified_braid = self._braid[:-2]
+            elif index == self._braid.shape[0] - 1:
+                modified_braid = self._braid[1:-1]
             else:
-                return transformed_braid
+                modified_braid = np.concatenate((self._braid[:(index - 1)], self._braid[(index + 1):]))
+            return modified_braid
         else:
             raise IllegalTransformationException
 
@@ -250,7 +246,7 @@ class Braid:
         return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
     
     def is_remove_sigma_inverse_pair_performable(self,index):
-        return self._braid.shape[0] != 0 and self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0
+        return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
     
     def remove_sigma_inverse_pair_performable_indices(self):
         original_braid = self._braid

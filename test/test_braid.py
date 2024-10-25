@@ -393,3 +393,42 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
             braid.remove_sigma_inverse_pair(index=0)
+
+    def test_is_remove_sigma_inverse_pair_performable_one_element(self):
+        braid = Braid([1])
+        assert not braid.is_remove_sigma_inverse_pair_performable(index = 0)
+
+    def test_is_remove_sigma_inverse_pair_performable_true(self):
+        braid = Braid([2, 1, -1])
+        assert braid.is_remove_sigma_inverse_pair_performable(index=1)
+
+    def test_is_remove_sigma_inverse_pair_performable_false(self):
+        braid = Braid([2, 1, -1, -2])
+        assert not braid.is_remove_sigma_inverse_pair_performable(index=0)
+    
+    def test_remove_sigma_inverse_pair1(self):
+        braid = Braid([2, 1, -1, 3])
+        print(braid.remove_sigma_inverse_pair(index=1))
+        assert braid.remove_sigma_inverse_pair(index=1).shape[0] == 2
+
+    def test_remove_sigma_inverse_pair2(self):
+        braid = Braid([3, 1, 2, -2])
+        assert braid.remove_sigma_inverse_pair(index=2).shape[0] == 2
+
+    def test_remove_sigma_inverse_pair3(self):
+        braid = Braid([-2, 3, 1, 2])
+        assert braid.remove_sigma_inverse_pair(index=3).shape[0] == 2
+
+    def test_remove_sigma_inverse_pair4(self):
+        braid = Braid([2, 3, 1, -2])
+        assert braid.remove_sigma_inverse_pair(index=3).shape[0] == 2
+
+    def test_remove_sigma_inverse_pair5(self):
+        braid = Braid([-2, 2, 1, 3])
+        assert braid.remove_sigma_inverse_pair(index=0).shape[0] == 2
+
+    def test_remove_sigma_inverse_pair_and_conjugate1(self):
+        braid = Braid([4])
+        braid = Braid(braid.conjugation(value=1, index=0))
+        braid = Braid(braid.remove_sigma_inverse_pair(index=0))
+        assert braid.values()[1][0] == 4 and braid.values()[1].shape[0] == 1 
