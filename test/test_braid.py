@@ -349,7 +349,7 @@ class TestBraidClassBraidRelationsBraidRelation2:
 
     def test_braid_relation2_negative_exception(self):
         braid = Braid([1, -3, 2])
-        braid.braid_relation2(-3) == Braid([-3, 1, 2])
+        assert braid.braid_relation2(-3) == Braid([-3, 1, 2])
         for i in range(-2, 0):
             with pytest.raises(IllegalTransformationException):
                 braid.braid_relation2(i)
