@@ -181,7 +181,7 @@ class TestBraidClassBraidRelationsBraidRelation1:
         assert braid.is_braid_relation1_performable(index = 0)
 
     def test_is_braid_relation1_performable_multiple_true(self):
-        braid = Braid([-5,4,-5,1,2,1,-2,-1])
+        braid = Braid([-5,-4,-5,1,2,1,-2,-1])
         assert braid.is_braid_relation1_performable(index = 0)
         assert braid.is_braid_relation1_performable(index = 3) 
         assert braid.is_braid_relation1_performable(index = 4)
