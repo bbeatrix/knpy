@@ -346,23 +346,60 @@ class TestBraidClassBraidRelationsShifts:
     
     def test_shift_left_empty(self):
         braid = Braid([])
-        braid.shift_left()
-        assert braid.values()[1].shape[0] == 0
+        with pytest.raises(ValueError):
+            braid.shift_left()
     
     def test_shift_right_empty(self):
         braid = Braid([])
-        braid.shift_right()
-        assert braid.values()[1].shape[0] == 0
+        with pytest.raises(ValueError):
+            braid.shift_right()
     
     def test_shift_left_with_amount_empty(self):
         braid = Braid([])
-        braid.shift_left_with_amount(amount=2)
-        assert braid.values()[1].shape[0] == 0
+        with pytest.raises(ValueError):
+            braid.shift_left(amount=0)
     
     def test_shift_right_with_amount_empty(self):
         braid = Braid([])
-        braid.shift_right_with_amount(amount=2)
-        assert braid.values()[1].shape[0] == 0
+        with pytest.raises(ValueError):
+            braid.shift_right(amount=0)
+
+    def test_shift_left(self):
+        braid = Braid([1, 2, 3, 4, 5])
+
+        assert braid.shift_left() == Braid([2, 3, 4, 5, 1])
+
+        assert braid.shift_left(0) == braid
+        assert braid.shift_left(1) == Braid([2, 3, 4, 5, 1])
+        assert braid.shift_left(2) == Braid([3, 4, 5, 1, 2])
+        assert braid.shift_left(3) == Braid([4, 5, 1, 2, 3])
+        assert braid.shift_left(4) == Braid([5, 1, 2, 3, 4])
+
+        for i in range(-5, 0):
+            assert braid.shift_left(i) == braid.shift_left(i + 5)
+
+        with pytest.raises(ValueError):
+            braid.shift_left(5)
+            braid.shift_left(-6)
+            braid.shift_left(9999)
+
+    def test_shift_right(self):
+        braid = Braid([1, 2, 3, 4, 5])
+
+        for i in range(-4, 6):
+            assert braid.shift_right(i) == braid.shift_left(-i)
+
+    def test_shift_left_multiple_same(self):
+        braid = Braid([1, 2, 1, 2])
+
+        assert braid.shift_left() == Braid([2, 1, 2, 1])
+        assert braid.shift_left(3) == Braid([2, 1, 2, 1])
+        assert braid.shift_left(-4) == braid
+    
+    def test_shift_doest_modify_original(self):
+        braid = Braid([1, 2, 3])
+        braid.shift_left()
+        assert braid == Braid([1, 2, 3])
 
 
 class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
