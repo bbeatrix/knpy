@@ -253,11 +253,11 @@ class Braid:
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
         """
-        positions = np.array([])
-        for index in range(0,n):
-            if is_braid_relation1_performable(self,index):
+        positions = []
+        for index in range(len(self._braid)):
+            if self.is_braid_relation1_performable(index):
                 positions.append(index)
-        return positions
+        return np.array(positions)
 
     def is_braid_relation2_performable(self,index):
         return self._braid.shape[0] != 0 and  abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
