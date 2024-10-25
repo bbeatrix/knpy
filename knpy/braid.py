@@ -242,7 +242,7 @@ class Braid:
         """
         if index >= 0:
             index -= self._braid.shape[0]
-        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and !(np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
+        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
     
     def braid_relation1_performable_indices(self):
         """
