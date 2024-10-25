@@ -319,7 +319,8 @@ class TestBraidClassBraidRelationsBraidRelation2:
     
     def test_is_braid_relation2_performable_empty(self):
         braid = Braid([])
-        assert not braid.is_braid_relation2_performable(index = 0)
+        with pytest.raises(IndexOutOfRangeException):
+            braid.is_braid_relation2_performable(index = 0)
     
     def test_is_braid_relation2_performable_indices_empty(self):
         braid = Braid([])
@@ -327,7 +328,7 @@ class TestBraidClassBraidRelationsBraidRelation2:
     
     def test_braid_relation2_empty(self):
         braid = Braid([])
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(IndexOutOfRangeException):
             braid.braid_relation2(index=0)
     
     def test_braid_relation2_performable(self):
@@ -354,13 +355,13 @@ class TestBraidClassBraidRelationsBraidRelation2:
             with pytest.raises(IllegalTransformationException):
                 braid.braid_relation2(i)
         for i in range(-5, -3):
-            with pytest.raises(Exception):
+            with pytest.raises(IndexOutOfRangeException):
                 braid.braid_relation2(i)
 
     def test_braid_relation2_big_index_exception(self):
         braid = Braid([1, -3, 2])
         for i in range(5):
-            with pytest.raises(Exception):
+            with pytest.raises(IndexOutOfRangeException):
                 braid.braid_relation2(3+i)
     
     def test_braid_relation2_loop_around(self):

@@ -237,6 +237,11 @@ class Braid:
         return np.array(positions)
 
     def is_braid_relation2_performable(self,index):
+        if index >= len(self._braid):
+            raise IndexOutOfRangeException(f"index = {index} too large, at least the number of crossings = {len(self._braid)}")
+        if index < -len(self._braid):
+            raise IndexOutOfRangeException(f"index = {index} too small, smaller than number of crossings * (-1) = {-len(self._braid)}")
+
         if index >= 0:
             index -= len(self._braid)
         return self._braid.shape[0] != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
