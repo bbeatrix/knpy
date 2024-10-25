@@ -105,7 +105,6 @@ class Braid:
         """
         #TODO Error
         #TODO Opposite direction should work as well
-        #assert index>=0 and index<(self._braid.shape[0]-2), "Invalid index"
         if  self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
             signs[self._braid[index:index+3] < 0] = -1
@@ -123,7 +122,6 @@ class Braid:
         Perform second braid relation.
         index: Where the chunk starts, on which operation can be done
         """
-        #assert index>=0 and index<(self._braid.shape[0]-1), "Invalid index"
         if self.is_braid_relation2_performable(index):
             transformed_braid = self._braid
             transformed_braid[index], transformed_braid[index+1] = transformed_braid[index+1], transformed_braid[index]
