@@ -1,6 +1,6 @@
 import sys
 import os
-
+sys.path.append('..')
 import pytest
 import numpy as np
 #IMPORTANT: knpy should be installed first
@@ -236,6 +236,31 @@ class TestBraidClassBraidRelationsBraidRelation2:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
             braid.braid_relation2(index=0)
+
+    def test_braid_relation2_abs_check1(self):
+        braid = Braid([1, 3, -3, 1])
+        assert np.all(braid.braid_relation2_performable_indices() == np.array([0, 2]))
+
+    def test_braid_relation2_abs_check2(self):
+        braid = Braid([1, 3, -1, -2, 4])
+        assert np.all(braid.braid_relation2_performable_indices() == np.array([0, 1, 3]))
+
+    def test_braid_relation2_one_element(self):
+        braid = Braid([10])
+        assert np.all(braid.braid_relation2_performable_indices() == np.array([]))
+
+    def test_braid_relation2_negative_exception(self):
+        braid = Braid([1, -3, 2])
+        for i in range(1, 5):
+            with pytest.raises(IllegalTransformationException):
+                braid.braid_relation2(-i)
+            
+
+    def test_braid_relation2_big_index_exception(self):
+        braid = Braid([1, -3, 2])
+        for i in range(5):
+            with pytest.raises(IllegalTransformationException):
+                braid.braid_relation2(2+i)
 
 
 class TestBraidClassBraidRelationsShifts:
