@@ -329,6 +329,11 @@ class TestBraidClassBraidRelationsBraidRelation2:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
             braid.braid_relation2(index=0)
+    
+    def test_braid_relation2_performable(self):
+        braid = Braid([3, 1, 2, 1])
+        for i in range(-4, 4):
+            assert braid.is_braid_relation2_performable(i) == (i in [-4, -1, 0, 3])
 
     def test_braid_relation2_abs_check1(self):
         braid = Braid([1, 3, -3, 1])
@@ -336,7 +341,7 @@ class TestBraidClassBraidRelationsBraidRelation2:
 
     def test_braid_relation2_abs_check2(self):
         braid = Braid([1, 3, -1, -2, 4])
-        assert np.all(braid.braid_relation2_performable_indices() == np.array([0, 1, 3]))
+        assert np.all(braid.braid_relation2_performable_indices() == np.array([0, 1, 3, 4]))
 
     def test_braid_relation2_one_element(self):
         braid = Braid([10])
@@ -344,16 +349,23 @@ class TestBraidClassBraidRelationsBraidRelation2:
 
     def test_braid_relation2_negative_exception(self):
         braid = Braid([1, -3, 2])
-        for i in range(1, 5):
+        braid.braid_relation2(-3) == Braid([-3, 1, 2])
+        for i in range(-2, 0):
             with pytest.raises(IllegalTransformationException):
-                braid.braid_relation2(-i)
-            
+                braid.braid_relation2(i)
+        for i in range(-5, -3):
+            with pytest.raises(Exception):
+                braid.braid_relation2(i)
 
     def test_braid_relation2_big_index_exception(self):
         braid = Braid([1, -3, 2])
         for i in range(5):
             with pytest.raises(IllegalTransformationException):
                 braid.braid_relation2(2+i)
+    
+    def test_braid_relation2_loop_around(self):
+        braid = Braid([3, 2, 1])
+        assert braid.braid_relation2(2) == Braid([1, 2, 3])
 
 
 class TestBraidClassBraidRelationsShifts:
