@@ -100,16 +100,21 @@ class Braid:
     #Braid relations
     def braid_relation1(self,index,inplace=True):
         """
-        Perform first braid relation.
-        index: Where the chunk starts, on which operation can be done
+        Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
+
+        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
+
+        *** DUE TO LEGACY REASONS, INPLACE=TRUE WILL RETURN ONLY THE _BRAID MEMBER, A NUMPY ARRAY!!! ***
+
+        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
         """
-        #TODO Error
-        #TODO Opposite direction should work as well
-        if  self.is_braid_relation1_performable(index):
+        if self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
-            signs[self._braid[index:index+3] < 0] = -1
-            transformed_braid = self._braid 
-            transformed_braid[index:index+3] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
+            if index > 0:
+                index -= len(self._braid)
+            signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
+            transformed_braid = self._braid.copy()
+            transformed_braid[[index, index + 1, index + 2]] = (abs(self._braid)[[index+1,index,index+1]]) * signs[::-1]
             if inplace:
                 self._braid = transformed_braid
             else:
@@ -208,14 +213,28 @@ class Braid:
 
     #Chech whether a move is performable or not
     def is_braid_relation1_performable(self,index):
-       return self._braid.shape[0] != 0 and 0 <= index and index + 2 < self._braid.shape[0] and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1
+        """
+        Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
+
+        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        """
+        if len(self._braid) < 3:
+            return False
+        if index >= 0:
+            index -= self._braid.shape[0]
+        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
     
     def braid_relation1_performable_indices(self):
-        diff_left = np.diff(np.abs(self._braid))
-        diff_right = np.diff(np.abs(self._braid[::-1]))
+        """
+        Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
 
-        positions = np.where((np.abs(diff_left[:-1]) == 1) & (diff_left[:-1] == diff_right[-2::-1]))[0]
-        return positions
+        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        """
+        positions = []
+        for index in range(len(self._braid)):
+            if self.is_braid_relation1_performable(index):
+                positions.append(index)
+        return np.array(positions)
 
     def is_braid_relation2_performable(self,index):
         return self._braid.shape[0] != 0 and 0 <= index and index + 1 < self._braid.shape[0] and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
@@ -275,3 +294,7 @@ class Braid:
 
         return performable_moves
 
+    def __eq__(self, value):
+        if not isinstance(value, Braid):
+            return NotImplemented
+        return self._n == value._n and np.array_equal(self._braid, value._braid)
