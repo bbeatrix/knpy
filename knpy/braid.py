@@ -218,7 +218,7 @@ class Braid:
         return positions
 
     def is_braid_relation2_performable(self,index):
-        return self._braid.shape[0] != 0 and  abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
+        return self._braid.shape[0] != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
     
     def braid_relation2_performable_indices(self):
         positions = np.where(1<np.abs(np.diff(np.abs(self._braid))))[0]
