@@ -175,10 +175,6 @@ class TestBraidClassBraidRelationsBraidRelation1:
     def test_is_braid_relation1_performable_end_true(self):
         braid = Braid([9,3,3,5,4,3,4])
         assert braid.is_braid_relation1_performable(index = 4)
-    
-    def test_is_braid_relation1_performable_opposite_true(self):
-        braid = Braid([9,3,3,-5,4,-5,1,2])
-        assert braid.is_braid_relation1_performable(index = 3)
 
     def test_is_braid_relation1_performable_beginning_true(self):
         braid = Braid([-5,4,-5,1,2])
@@ -198,6 +194,10 @@ class TestBraidClassBraidRelationsBraidRelation1:
         braid = Braid([9,3,3,5,3,1])
         assert not braid.is_braid_relation1_performable(index = 0)
     
+    def test_is_braid_relation1_performable_opposite_false(self):
+        braid = Braid([9,3,3,-5,4,-5,1,2])
+        assert not braid.is_braid_relation1_performable(index = 3)
+
     def test_is_braid_relation1_performable_mixed(self):
         braid = Braid([2, 2, 1, -2, 1])
         for i in range(len(braid.values()[1])):
