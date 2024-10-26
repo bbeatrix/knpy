@@ -163,7 +163,7 @@ class Braid:
         else:
             raise IllegalTransformationException(f"Conjugation is not performable at index {index}")
 
-    def stabilization(self, index: int = None, on_top = False, inverse: bool = False) -> 'Braid':
+    def stabilization(self, index: int | None = None, on_top = False, inverse: bool = False) -> 'Braid':
         """
         Performs stabilization move before specified crossing index, either 
         at the top or bottom thread, inserting either a positive or negative
@@ -172,7 +172,10 @@ class Braid:
 
         if index == None:
             index = self._braid.shape[0]
-        elif index<0 or index>self._braid.shape[0]:
+        
+        assert isinstance(index, int)
+
+        if index<0 or index>self._braid.shape[0]:
             raise IllegalTransformationException('Index must be between 0 and length of braid')
 
         braid_stabilized = self._braid.copy()
@@ -326,13 +329,13 @@ class Braid:
 
         for i in range(0, len(self)):
             if self.is_destabilization_performable(i):
-                performable_moves.append([partial(self.destabilization, i)])
+                performable_moves.extend([partial(self.destabilization, i)])
 
         for i in range(0, len(self) + 1):
-            performable_moves.append([partial(self.stabilization, index=i, on_top=False, inverse=False)])
-            performable_moves.append([partial(self.stabilization, index=i, on_top=False, inverse=True)])
-            performable_moves.append([partial(self.stabilization, index=i, on_top=True, inverse=False)])
-            performable_moves.append([partial(self.stabilization, index=i, on_top=True, inverse=True)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=False)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=True)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=False)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=True)])
         
         conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
         conjugation_indices = (range(0, len(self) + 2))
