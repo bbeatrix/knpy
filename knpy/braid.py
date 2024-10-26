@@ -138,14 +138,20 @@ class Braid:
     def conjugation(self,value: int,index: int) -> 'Braid':
         """
         Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the index index2
-        index1: int in within the interval [-(n-1),n-1], not equal to zero
-        index2: int in within the interval [0, n]
+        value: Inserts sigmas `σ_{value} σ_{-value}`. Must be in the range `(-n, n)` and not zero where n is the number of threads (so `n = braid.values()[0]`).
+        index: When the index is less than k where k is the number of crossings, it inserts them before the k-th sigma. When index is k it inserts them at the end. When index is k + 1, it inserts `σ_{value}` at the end and `ο_{-value}` at the beginning. Must be in rangee `[0, k +1]` (negative value are explicitly not allowed here).
+
+        Example. Let's denote the existing sigmas as `0 1 2`, value as `a` then depending on the index the result will be:
+
+        ```
+        0: a -a 0 1 2
+        1: 0 a -a 1 2
+        2: 0 1 a -a 2
+        3: 0 1 2 a -a
+        4: -a 0 1 2 a
+        ```
         """
-        """
-        assert index != 0, "Index should not be zero"
-        assert abs(index)<self._n, f"Index should be less than {self._n}"
-        assert type(index) is int, "Provided index should be integer"
-        """
+        # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but is kept here to be sure.
         if self.is_conjugation_performable(value, index):
             
             if index == len(self) + 1:
@@ -243,7 +249,21 @@ class Braid:
         return positions
 
     def is_conjugation_performable(self,value: int, index: int) -> bool:
-        return value != 0 and self._n>abs(value) and 0 <= index and index <= len(self) + 1
+        """
+        See documentation conjugation member function for details.
+
+        Note: this function either returns true or raises an exception.
+        """
+        if value == 0:
+            raise ValueError("Sigma can't be zero")
+        if value <= -self._n or value >= self._n:
+            raise ValueError(f"Sigma (σ_{{{value}}}) must be in range (-n, n) where n is the number of threads (so `n = braid.values()[0]`).")
+        if index < 0:
+            raise IndexOutOfRangeException("Negative indexes are not allowed for conjugation")
+        if index > len(self._braid) + 1:
+            raise IndexOutOfRangeException(f"Conjugation index (currently {index}) can be at most the number of crossings + 1 = {len(self._braid)}")
+
+        return True
     
     def is_destabilization_performable(self) -> bool:
         return len(self) != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))

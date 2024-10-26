@@ -105,8 +105,10 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
 class TestBraidClassBraidRelationsConjugation:
     def test_is_conjugation_performable_empty(self) -> None:
         braid = Braid([])
-        assert not braid.is_conjugation_performable(value=1, index=0)
-        assert not braid.is_conjugation_performable(value=1, index=1)
+        with pytest.raises(ValueError):
+            braid.is_conjugation_performable(value=1, index=0)
+        with pytest.raises(ValueError):
+            braid.is_conjugation_performable(value=1, index=1)
 
     def test_is_conjugation_performable_true1(self) -> None:
         braid = Braid([1, -2, 3, 4])
@@ -122,27 +124,33 @@ class TestBraidClassBraidRelationsConjugation:
     
     def test_is_conjugation_performable_false1(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(value=0, index=4)
+        with pytest.raises(ValueError):
+            braid.is_conjugation_performable(value=0, index=4)
     
     def test_is_conjugation_performable_false2(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(value=-5, index=12)
+        # It could error due to value or index beging out of range.
+        with pytest.raises(Exception):
+            braid.is_conjugation_performable(value=-5, index=12)
 
     def test_is_conjugation_performable_false3(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(value=5, index=4)
+        with pytest.raises(ValueError):
+            assert not braid.is_conjugation_performable(value=5, index=4)
     
     def test_is_conjugation_performable_inbetween_false1(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(value=1, index=-1)
+        with pytest.raises(IndexOutOfRangeException):
+            braid.is_conjugation_performable(value=1, index=-1)
     
     def test_is_conjugation_performable_inbetween_false2(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert not braid.is_conjugation_performable(value=1, index=6)
+        with pytest.raises(IndexOutOfRangeException):
+            braid.is_conjugation_performable(value=1, index=6)
 
     def test_conjugation_empty(self) -> None:
         braid = Braid([])
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(ValueError):
             braid = braid.conjugation(value=0, index=0) 
 
     def test_conjugation(self) -> None:
@@ -187,7 +195,7 @@ class TestBraidClassBraidRelationsConjugation:
 
     def test_conjugation_exception(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(ValueError):
             braid = braid.conjugation(value=5, index=4)
 
 class TestBraidClassBraidRelationsBraidRelation1:
