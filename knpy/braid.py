@@ -189,9 +189,12 @@ class Braid:
     def remove_sigma_inverse_pair(self,index: int) -> 'Braid':
         """
         Remove consequtive inverse on a given place (last and first element are consequtive)
-        index: the smaller index (or when the pair is the last and first then it is the last index)
+        index: the smaller index (or when the pair is the last and first then it is the last index); must be in the range [-k, k) where k is the number of crossings (so `len(braid)`).
         """
         if self.is_remove_sigma_inverse_pair_performable(index):
+            if index < 0:
+                index += len(self)
+
             if index == 0:
                 modified_braid = self._braid[2:]
             elif index == len(self) - 2:
@@ -269,6 +272,11 @@ class Braid:
         return len(self) != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
     
     def is_remove_sigma_inverse_pair_performable(self,index: int) -> bool:
+        if index < -len(self):
+            raise IndexOutOfRangeException(f"index = {index} too small, must by at least -length = {-len(self)}")
+        if index >= len(self):
+            raise IndexOutOfRangeException(f"index = {index} too large, must be less than length = {len(self)}")
+
         return len(self) != 0 and (self._braid[index] + self._braid[(index+1)%len(self)] == 0)
     
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:

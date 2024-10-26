@@ -442,7 +442,8 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
     
     def test_is_remove_sigma_inverse_pair_performable_empty(self) -> None:
         braid = Braid([])
-        assert not braid.is_remove_sigma_inverse_pair_performable(index=0)
+        with pytest.raises(IndexOutOfRangeException):
+            braid.is_remove_sigma_inverse_pair_performable(index=0)
     
     def test_remove_sigma_inverse_pair_performable_indices_empty(self) -> None:
         braid = Braid([])
@@ -450,7 +451,7 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
     
     def test_remove_sigma_inverse_pair_empty(self) -> None:
         braid = Braid([])
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(IndexOutOfRangeException):
             braid.remove_sigma_inverse_pair(index=0)
 
     def test_is_remove_sigma_inverse_pair_performable_one_element(self):
