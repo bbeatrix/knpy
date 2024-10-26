@@ -345,22 +345,22 @@ class Braid:
                 if self.is_conjugation_performable(v, i):
                     conjugation_performable_moves = conjugation_performable_moves + [partial(self.conjugation,value=v,index=i)]
 
-        performable_moves = performable_moves + conjugation_performable_moves
+        performable_moves += conjugation_performable_moves
 
         braid_relation1_indices = self.braid_relation1_performable_indices()
         braid_relation1_performable_moves: list[BraidTransformation] = [partial(self.braid_relation1,index=i) for i in braid_relation1_indices]
 
-        performable_moves = performable_moves + braid_relation1_performable_moves
+        performable_moves += braid_relation1_performable_moves
 
         braid_relation2_indices = self.braid_relation2_performable_indices()
         braid_relation2_performable_moves: list[BraidTransformation] = [partial(self.braid_relation2,index=i) for i in braid_relation2_indices]
 
-        performable_moves = performable_moves + braid_relation2_performable_moves
+        performable_moves += braid_relation2_performable_moves
 
         braid_remove_sigma_inverse_pairs = self.remove_sigma_inverse_pair_performable_indices()
         braid_remove_sigma_inverse_pair_moves: list[BraidTransformation] = [partial(self.remove_sigma_inverse_pair,index=i) for i in braid_remove_sigma_inverse_pairs]
 
-        performable_moves = performable_moves + braid_remove_sigma_inverse_pair_moves
+        performable_moves += braid_remove_sigma_inverse_pair_moves
 
         return performable_moves
 
