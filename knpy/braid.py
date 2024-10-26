@@ -15,8 +15,11 @@ class Braid:
     def __init__(self, sigmas: np.ndarray | list[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
-        sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots (e. g. 11a,13n)
-        notation_index: If sigmas is a name of braid than it is possible that multiple notations are available to the same knot. notation_index says which one to choose from these.
+
+        sigmas: Braid notation, e.g. [1,-1,2] or the string name of knot e.g. 4_1 #TODO Above 10 there a and n knots
+            (e.g. 11a,13n)
+        notation_index: If sigmas is a name of braid than it is possible that multiple notations are available to the
+            same knot. notation_index says which one to choose from these.
         #TODO 10_136 {{-1;-1;-2;3;-2;1;-2;-2;3;2;2};{-1;2;-1;2;3;-2;-2;-4;3;-4}}? Which one?
         #TODO 11n_8,{{-1;-1;-2;1;-2;-1;3;-2;-2;-4;3;-4};{1;2;-1;2;3;-2;-1;-1;-2;-2;-3;-3;-2}}? Which one?
         """
@@ -76,7 +79,9 @@ class Braid:
 
     def shift_left(self, amount: int = 1) -> "Braid":
         """
-        Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
+        Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it
+        transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
+
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
 
@@ -104,11 +109,18 @@ class Braid:
     # Braid relations
     def braid_relation1(self, index: int) -> "Braid":
         """
-        Perform first braid relation. Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a + 1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
+        Perform first braid relation.
 
-        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
+        Maps between chunks `[±a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ±(a + 1)]`, `[∓a, ±(a + 1), ±a] ↔ [±(a + 1), ±a, ∓(a +
+        1)]` and `[±a, ±(a + 1), ∓a] ↔ [∓(a + 1), ±a, ±(a + 1)]` (where all `±` have the same sign and all `∓` have the
+        opposite). `[±a, ∓(a + 1), ±a] ↔ [±(a + 1), ∓a, ±(a + 1)]` is NOT allowed.
 
-        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
+        The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is
+        assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some
+        elements from the beginning).
+
+        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of
+        crossings in the braid (so n = len(braid))
         """
         if self.is_braid_relation1_performable(index):
             signs = np.ones(
@@ -128,14 +140,20 @@ class Braid:
 
     def braid_relation2(self, index: int) -> "Braid":
         """
-        Perform second braid relation. Maps between the chunks `[i, j] ↔ [j, i]` if `abs(abs(i) - abs(j)) >= 2`.
+        Perform second braid relation.
 
-        The elements of the chuck must be distict, so the braid must consist of at least 2 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
+        Maps between the chunks `[i, j] ↔ [j, i]` if `abs(abs(i) - abs(j)) >= 2`.
 
-        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
+        The elements of the chuck must be distict, so the braid must consist of at least 2 crossings. The braid is
+        assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some
+        elements from the beginning).
+
+        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the
+            number of crossings in the braid (so n = len(braid))
         """
         if self.is_braid_relation2_performable(index):
-            # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
+            # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if
+            # `index = len(self._braid) - 1`.
             if index >= 0:
                 index -= len(self._braid)
             transformed_braid = self._braid.copy()
@@ -151,11 +169,18 @@ class Braid:
     # Markov moves
     def conjugation(self, value: int, index: int) -> "Braid":
         """
-        Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the index index2
-        value: Inserts sigmas `σ_{value} σ_{-value}`. Must be in the range `(-n, n)` and not zero where n is the number of threads (so `n = braid.values()[0]`).
-        index: When the index is less than k where k is the number of crossings, it inserts them before the k-th sigma. When index is k it inserts them at the end. When index is k + 1, it inserts `σ_{value}` at the end and `ο_{-value}` at the beginning. Must be in rangee `[0, k +1]` (negative value are explicitly not allowed here).
+        Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the
+        index index2
 
-        Example. Let's denote the existing sigmas as `0 1 2`, value as `a` then depending on the index the result will be:
+        value: Inserts sigmas `σ_{value} σ_{-value}`. Must be in the range `(-n, n)` and not zero where n is the number
+            of threads (so `n = braid.values()[0]`).
+        index: When the index is less than k where k is the number of crossings, it inserts them before the k-th sigma.
+            When index is k it inserts them at the end. When index is k + 1, it inserts `σ_{value}` at the end and
+            `ο_{-value}` at the beginning. Must be in rangee `[0, k +1]` (negative value are explicitly not allowed
+            here).
+
+        Example. Let's denote the existing sigmas as `0 1 2`, value as `a` then depending on the index the result will
+        be:
 
         ```
         0: a -a 0 1 2
@@ -165,7 +190,8 @@ class Braid:
         4: -a 0 1 2 a
         ```
         """
-        # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but is kept here to be sure.
+        # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but
+        # is kept here to be sure.
         if self.is_conjugation_performable(value, index):
 
             if index == len(self) + 1:
@@ -224,7 +250,9 @@ class Braid:
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
         """
         Remove consequtive inverse on a given place (last and first element are consequtive)
-        index: the smaller index (or when the pair is the last and first then it is the last index); must be in the range [-k, k) where k is the number of crossings (so `len(braid)`).
+
+        index: the smaller index (or when the pair is the last and first then it is the last index); must be in the
+            range [-k, k) where k is the number of crossings (so `len(braid)`).
         """
         if self.is_remove_sigma_inverse_pair_performable(index):
             if index < 0:
@@ -247,7 +275,8 @@ class Braid:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
 
-        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
+        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n =
+            len(braid))
         """
         if len(self._braid) < 3:
             return False
@@ -265,7 +294,8 @@ class Braid:
 
     def braid_relation1_performable_indices(self) -> np.ndarray:
         """
-        Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
+        Returns array of indices where braid relation 1 is performable. See documentation of member function
+        `braid_relation1` for details.
 
         returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
@@ -285,7 +315,8 @@ class Braid:
                 f"index = {index} too small, smaller than number of crossings * (-1) = {-len(self._braid)}"
             )
 
-        # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
+        # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index =
+        # len(self._braid) - 1`.
         if index >= 0:
             index -= len(self._braid)
         return len(self) != 0 and abs(abs(self._braid[index]) - abs(self._braid[index + 1])) >= 2
@@ -307,7 +338,8 @@ class Braid:
             raise ValueError("Sigma can't be zero")
         if value <= -self._n or value >= self._n:
             raise ValueError(
-                f"Sigma (σ_{{{value}}}) must be in range (-n, n) where n is the number of threads (so `n = braid.values()[0]`)."
+                f"Sigma (σ_{{{value}}}) must be in range (-n, n) where n is the number of threads "
+                f"(so `n = braid.values()[0]`)."
             )
         if index < 0:
             raise IndexOutOfRangeException("Negative indexes are not allowed for conjugation")
