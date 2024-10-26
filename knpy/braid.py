@@ -262,7 +262,7 @@ class Braid:
             performable_moves.append(self.destabilization)
         
         conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
-        conjugation_indices = (range(0, self._braid.shape[0] + 1))
+        conjugation_indices = (range(0, self._braid.shape[0] + 2))
         conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
             for i in conjugation_indices:
