@@ -582,6 +582,8 @@ class TestBraidPerformableMoves:
         assert len(states) == len(all_states)
         for state in states:
             assert state in all_states
+        for state in all_states:
+            assert state in states
     @pytest.mark.parametrize("low, high, size", [[0, 1, 10], [-5,5,1], [-1, 1, 10], [-5, 5, 15]])
     def test_performable_moves_random(self, low, high, size):
         rng = np.random.default_rng(42)
