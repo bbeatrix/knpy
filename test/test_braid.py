@@ -444,7 +444,6 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
             braid.remove_sigma_inverse_pair(index=0)
-<<<<<<< HEAD
 
     def test_is_remove_sigma_inverse_pair_performable_one_element(self):
         braid = Braid([1])
