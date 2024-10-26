@@ -144,14 +144,30 @@ class Braid:
         else:
             raise IllegalTransformationException
 
-    def stabilization(self,inverse: bool = False) -> 'Braid':
+    def stabilization(self, index: int = None, on_top = False, inverse: bool = False) -> 'Braid':
         """
-        Performs stabilization move.
+        Performs stabilization move before specified crossing index, either 
+        at the top or bottom thread, inserting either a positive or negative
+        braid generator.
         """
+
+        if index == None:
+            index = self._braid.shape(0)
+        elif index<0 or index>self._braid.shape(0):
+            raise IllegalTransformationException('Index must be between 0 and length of braid')
+
+        braid_stabilized = self._braid.copy()
         if inverse:
-            braid_stabilized = np.concatenate((self._braid,np.array([-self._n])))
+            new_sigma = -1
         else:
-            braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
+            new_sigma = +1
+
+        if on_top:
+            braid_stabilized = braid_stabilized+1
+            braid_stabilized = np.insert(braid_stabilized, new_sigma, index)
+        else:
+            new_sigma = new_sigma*self._n
+            braid_stabilized = np.insert(braid_stabilized, new_sigma, index)
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
