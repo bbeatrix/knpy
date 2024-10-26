@@ -176,7 +176,7 @@ class Braid:
         Performs destabilization move at given index location, results in
         a braid with one fewer crossings and one fewer strands.
         """
-        if self.is_destabilization_performable() :
+        if self.is_destabilization_performable(index) :
             on_top = abs(self._braid[index]) == 1
             braid_destabilized = np.delete(self._braid, [index])
             if on_top:
