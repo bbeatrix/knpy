@@ -61,7 +61,7 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
             assert not braid.is_destabilization_performable(i)
 
     def test_is_destabilization_performable_false2(self) -> None:
-        braid = Braid([ 1, -2, -3, 1])
+        braid = Braid([ 1, -2, -3, 1, 3])
         for i in range(10):
             assert not braid.is_destabilization_performable(i)
 
@@ -122,25 +122,35 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid = braid.destabilization() 
+            braid = braid.destabilization(index=0) 
 
 
     def test_destabilization(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.destabilization()
-        assert braid.values()[0] == 3
-        assert len(braid.values()[1]) == 2
+        braid = braid.destabilization(index=2)
+        assert np.all(braid.values()[1] == np.array([1, -2]))
+
+    def test_destabilization2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.destabilization(index=0)
+        print(braid.values())
+        assert np.all(braid.values()[1] == np.array([-1, 2]))
     
     def test_destabilization_inverse(self) -> None:
         braid = Braid([1, -2, -3])
-        braid = braid.destabilization()
-        assert braid.values()[0] == 3
-        assert len(braid.values()[1]) == 2
+        braid = braid.destabilization(index=2)
+        assert np.all(braid.values()[1] == np.array([1, -2]))
+
+    def test_destabilization_inverse2(self) -> None:
+        braid = Braid([-1, -2, -3])
+        braid = braid.destabilization(index=0)
+        assert np.all(braid.values()[1] == np.array([-1, -2]))
 
     def test_destabilization_exception(self) -> None:
-        braid = Braid([-3 ,1, -2, 3])
-        with pytest.raises(IllegalTransformationException):
-            braid = braid.destabilization() 
+        braid = Braid([-3 ,1, -2, 3, 1])
+        for i in range(5):
+            with pytest.raises(IllegalTransformationException):
+                braid = braid.destabilization(index=i)
 
 class TestBraidClassBraidRelationsConjugation:
     def test_is_conjugation_performable_empty(self) -> None:
