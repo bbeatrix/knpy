@@ -597,13 +597,18 @@ class TestBraidPerformableMoves:
                 states.append(move())
 
             all_moves = self.get_all_moves(braid)
-
+            all_states =[]
             for move in all_moves:
                 try:
                     state = move()
                 except IllegalTransformationException as e:
                     pass
                 else:
-                    assert state in states
+                    all_states.append(state)
+            assert len(states) == len(all_states)
+            for state in states:
+                assert state in all_states
+            for state in all_states:
+                assert state in states
 
 
