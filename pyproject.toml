@@ -1,5 +1,6 @@
 [tool.pylint.main]
 load-plugins = 'pylint_pytest'
+max-line-length = 120
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = ["raw-checker-failed",
@@ -30,3 +31,9 @@ disable = ["raw-checker-failed",
 [tool.mypy]
 ignore_missing_imports = true
 check_untyped_defs = true
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
