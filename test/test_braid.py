@@ -1,3 +1,4 @@
+from functools import partial
 import sys
 import os
 import pytest
@@ -521,3 +522,81 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
         braid = Braid([1, 2, 2, 3, -1])
         result = braid.remove_sigma_inverse_pair_performable_indices()
         assert np.array_equal(result, [4])
+
+
+class TestBraidPerformableMoves:
+    @pytest.mark.parametrize("sigmas", [[1,2,3,4,5], [-2, 4, 8, -5, 3, 1, 2]])
+    def test_performable_moves_are_valid(self, sigmas):
+        braid = Braid(sigmas)
+        performable_moves = braid.performable_moves()
+        for move in performable_moves:
+            move()
+    
+    def get_all_moves(self, braid):
+        performable_moves = [braid.shift_left,braid.shift_right,partial(braid.stabilization,inverse=True), partial(braid.stabilization,inverse=False)] #Always performable
+
+        performable_moves.append(braid.destabilization)
+        
+        conjugation_values = list(range(-braid._n+1,0)) + list(range(1,braid._n))
+        conjugation_indices = (range(0, braid._braid.shape[0] + 2))
+        conjugation_performable_moves = []
+        for v in conjugation_values:
+            for i in conjugation_indices:
+                conjugation_performable_moves = conjugation_performable_moves + [partial(braid.conjugation,value=v,index=i)]
+
+        performable_moves = performable_moves + conjugation_performable_moves
+
+        braid_relation1_performable_moves = [partial(braid.braid_relation1,index=i) for i in range(len(braid.values()[1]))]
+
+        performable_moves = performable_moves + braid_relation1_performable_moves
+
+        braid_relation2_performable_moves = [partial(braid.braid_relation2,index=i) for i in range(len(braid.values()[1]))]
+
+        performable_moves = performable_moves + braid_relation2_performable_moves
+
+        braid_remove_sigma_inverse_pair_moves = [partial(braid.remove_sigma_inverse_pair,index=i) for i in range(len(braid.values()[1]))]
+
+        performable_moves = performable_moves + braid_remove_sigma_inverse_pair_moves
+        return performable_moves
+    
+    @pytest.mark.parametrize("sigmas", [[1,2,3,4,5], [-2, 4, 8, -5, 3, 1, 2]])
+    def test_performable_moves(self, sigmas):
+        braid = Braid(sigmas)
+        performable_moves = braid.performable_moves()
+
+        states = []
+        for move in performable_moves:
+            states.append(move())
+
+        all_moves = self.get_all_moves(braid)
+        
+        for move in all_moves:
+            try:
+                state = move()
+            except IllegalTransformationException as e:
+                pass
+            else:
+                assert state in states
+    @pytest.mark.parametrize("low, high, size", [[0, 1, 10], [-5,5,1], [-1, 1, 10], [-5, 5, 15]])
+    def test_performable_moves_random(self, low, high, size):
+        rng = np.random.default_rng(42)
+        for i in range(50):
+            sigmas = rng.integers(low, high, size)
+            braid = Braid(np.where(sigmas == 0, 1, sigmas))
+            performable_moves = braid.performable_moves()
+
+            states = []
+            for move in performable_moves:
+                states.append(move())
+
+            all_moves = self.get_all_moves(braid)
+
+            for move in all_moves:
+                try:
+                    state = move()
+                except IllegalTransformationException as e:
+                    pass
+                else:
+                    assert state in states
+
+
