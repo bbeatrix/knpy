@@ -61,23 +61,23 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_stabilization_empty(self) -> None:
         braid = Braid([])
         braid = braid.stabilization()
-        assert braid.values()[0] == 2
-        assert braid.values()[1][-1] == 1
-        assert len(braid.values()[1]) == 1
+        assert braid.strand_count == 2
+        assert braid.notation()[-1] == 1
+        assert len(braid) == 1
 
     def test_stabilization(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization()
-        assert braid.values()[0] == 5
-        assert braid.values()[1][-1] == 4
-        assert len(braid.values()[1]) == 4
+        assert braid.strand_count == 5
+        assert braid.notation()[-1] == 4
+        assert len(braid) == 4
 
     def test_stabilization_inverse(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(inverse=True)
-        assert braid.values()[0] == 5
-        assert braid.values()[1][-1] == -4
-        assert len(braid.values()[1]) == 4
+        assert braid.strand_count == 5
+        assert braid.notation()[-1] == -4
+        assert len(braid) == 4
 
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
@@ -88,14 +88,14 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_destabilization(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.destabilization()
-        assert braid.values()[0] == 3
-        assert len(braid.values()[1]) == 2
+        assert braid.strand_count == 3
+        assert len(braid) == 2
     
     def test_destabilization_inverse(self) -> None:
         braid = Braid([1, -2, -3])
         braid = braid.destabilization()
-        assert braid.values()[0] == 3
-        assert len(braid.values()[1]) == 2
+        assert braid.strand_count == 3
+        assert len(braid) == 2
 
     def test_destabilization_exception(self) -> None:
         braid = Braid([-3 ,1, -2, 3])
@@ -155,42 +155,42 @@ class TestBraidClassBraidRelationsConjugation:
 
     def test_conjugation(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=1, index=5).values()[1]
+        values = braid.conjugation(value=1, index=5).notation()
         assert values[0] == -1 and values[-1] == 1
     
     def test_conjugation1(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=2, index=4).values()[1]
+        values = braid.conjugation(value=2, index=4).notation()
         assert values[-2] == 2 and values[-1] == -2
 
     def test_conjugation2(self) -> None:
         braid = Braid([-1, -2, 5, 6])
-        values = braid.conjugation(value=-4, index=5).values()[1]
+        values = braid.conjugation(value=-4, index=5).notation()
         assert values[0] == 4 and values[-1] == -4
 
     def test_conjugation3(self) -> None:
         braid = Braid([-1, -2, 7, 6])
-        values = braid.conjugation(value=5, index=4).values()[1]
+        values = braid.conjugation(value=5, index=4).notation()
         assert values[-2] == 5 and values[-1] == -5
 
     def test_conjugation_inverse(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=-4, index=4).values()[1]
+        values = braid.conjugation(value=-4, index=4).notation()
         assert values[-2] == -4 and values[-1] == 4
     
     def test_conjugation_inbetween1(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=1, index=0).values()[1]
+        values = braid.conjugation(value=1, index=0).notation()
         assert values[0] == 1 and values[1] == -1
     
     def test_conjugation_inbetween2(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=2, index=3).values()[1]
+        values = braid.conjugation(value=2, index=3).notation()
         assert values[3] == 2 and values[4] == -2
 
     def test_conjugation_inverse_inbetween(self) -> None:
         braid = Braid([-1, -2, 3, 4])
-        values = braid.conjugation(value=-4, index=2).values()[1]
+        values = braid.conjugation(value=-4, index=2).notation()
         assert values[2] == -4 and values[3] == 4
 
     def test_conjugation_exception(self) -> None:
@@ -248,12 +248,12 @@ class TestBraidClassBraidRelationsBraidRelation1:
 
     def test_is_braid_relation1_performable_mixed(self) -> None:
         braid = Braid([2, 2, 1, -2, 1])
-        for i in range(len(braid.values()[1])):
+        for i in range(len(braid)):
             assert braid.is_braid_relation1_performable(i) == (i in [1, 3])
     
     def test_is_braid_relation1_performable_mixed_negative(self) -> None:
         braid = Braid([2, 2, 1, -2, 1])
-        for i in range(len(braid.values()[1]), 0):
+        for i in range(len(braid), 0):
             assert braid.is_braid_relation1_performable(i) == (i in [-4, -2])
     
     def test_is_braid_relation1_performable_indices_empty(self) -> None:
@@ -286,23 +286,23 @@ class TestBraidClassBraidRelationsBraidRelation1:
 
     def test_braid_relation1_all_same_sign(self) -> None:
         braid = Braid([3, 2, 1, 2])
-        assert (braid.braid_relation1(1).values()[1] == [3, 1, 2, 1]).all()
+        assert (braid.braid_relation1(1).notation() == [3, 1, 2, 1]).all()
 
     def test_braid_relation1_last_sign_different(self) -> None:
         braid = Braid([3, 2, 1, -2])
-        assert (braid.braid_relation1(1).values()[1] == [3, -1, 2, 1]).all()
+        assert (braid.braid_relation1(1).notation() == [3, -1, 2, 1]).all()
 
     def test_braid_relation1_circular(self) -> None:
         braid = Braid([1, -2, 3, 2])
-        assert (braid.braid_relation1(3).values()[1] == [2, 1, 3, -1]).all()
+        assert (braid.braid_relation1(3).notation() == [2, 1, 3, -1]).all()
 
     def test_braid_relation1_negative_index_inside(self) -> None:
         braid = Braid([3, 2, 1, 2])
-        assert (braid.braid_relation1(-3).values()[1] == [3, 1, 2, 1]).all()
+        assert (braid.braid_relation1(-3).notation() == [3, 1, 2, 1]).all()
 
     def test_braid_relation1_negative_index_boundary(self) -> None:
         braid = Braid([1, 2, 3, 2])
-        assert (braid.braid_relation1(-1).values()[1] == [2, 1, 3, 1]).all()
+        assert (braid.braid_relation1(-1).notation() == [2, 1, 3, 1]).all()
 
     def test_braid_relation1_short(self) -> None:
         braid = Braid([1, 2])
@@ -494,7 +494,7 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
         braid = Braid([4])
         braid = braid.conjugation(value=1, index=0)
         braid = braid.remove_sigma_inverse_pair(index=0)
-        assert braid.values()[1][0] == 4 and braid._braid.shape[0] == 1 
+        assert braid.notation()[0] == 4 and braid._braid.shape[0] == 1 
 
     def test_remove_sigma_inverse_pair_indices_empty(self):
         braid = Braid([])

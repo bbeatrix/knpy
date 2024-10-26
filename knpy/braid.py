@@ -35,7 +35,7 @@ class Braid:
         if np.any(self._braid == 0):
             raise InvalidBraidException
         
-        if(self._braid.shape[0] == 0):
+        if(len(self) == 0):
             self._n = 1
         else:
             self._n = np.max(np.abs(self._braid)) + 1
@@ -45,6 +45,19 @@ class Braid:
         Returns (self._n,self._braid) values as tuple
         """
         return (self._n,self._braid.copy())
+
+    def notation(self, copy = True) -> BraidNotation:
+        """
+        Returns numpy array of sigmas
+        """
+        if copy:
+            return self._braid.copy()
+        else:
+            return self._braid
+
+    @property
+    def strand_count(self) -> int:
+        return self._n
     
     def to_torch(self) -> torch.Tensor:
         """
@@ -61,7 +74,7 @@ class Braid:
     def shift_left(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
 
         if amount >= len(self._braid) or amount <= -len(self._braid):
@@ -73,7 +86,7 @@ class Braid:
     def shift_right(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
 
         if amount >= len(self._braid) or amount <= -len(self._braid):
@@ -88,7 +101,7 @@ class Braid:
 
         The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
 
-        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         if self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
@@ -108,7 +121,7 @@ class Braid:
 
         The elements of the chuck must be distict, so the braid must consist of at least 2 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).        
 
-        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         if self.is_braid_relation2_performable(index):
             # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
@@ -141,7 +154,7 @@ class Braid:
         # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but is kept here to be sure.
         if self.is_conjugation_performable(value, index):
             
-            if index == self._braid.shape[0] + 1:
+            if index == len(self) + 1:
                 conjugated_braid = np.concatenate((np.array([-value]),self._braid,np.array([value])))
             else:
                 conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
@@ -181,9 +194,9 @@ class Braid:
         if self.is_remove_sigma_inverse_pair_performable(index):
             if index == 0:
                 modified_braid = self._braid[2:]
-            elif index == self._braid.shape[0] - 2:
+            elif index == len(self) - 2:
                 modified_braid = self._braid[:-2]
-            elif index == self._braid.shape[0] - 1:
+            elif index == len(self) - 1:
                 modified_braid = self._braid[1:-1]
             else:
                 modified_braid = np.concatenate((self._braid[:(index)], self._braid[(index + 2):]))
@@ -197,19 +210,19 @@ class Braid:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
 
-        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         if len(self._braid) < 3:
             return False
         if index >= 0:
-            index -= self._braid.shape[0]
-        return self._braid.shape[0] != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
+            index -= len(self)
+        return len(self) != 0 and abs(self._braid[index]) == abs(self._braid[index+2]) and abs(abs(self._braid[index+1]) - abs(self._braid[index])) == 1 and not (np.sign(self._braid[index+1]) != np.sign(self._braid[index]) and np.sign(self._braid[index+1]) != np.sign(self._braid[index+2]))
     
     def braid_relation1_performable_indices(self) -> np.ndarray:
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
 
-        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         positions = []
         for index in range(len(self._braid)):
@@ -226,7 +239,7 @@ class Braid:
         # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
         if index >= 0:
             index -= len(self._braid)
-        return self._braid.shape[0] != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
+        return len(self) != 0 and abs(abs(self._braid[index]) - abs(self._braid[index+1])) >= 2
     
     def braid_relation2_performable_indices(self) -> np.ndarray:
         if len(self._braid) == 0:
@@ -253,14 +266,14 @@ class Braid:
         return True
     
     def is_destabilization_performable(self) -> bool:
-        return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
+        return len(self) != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
     
     def is_remove_sigma_inverse_pair_performable(self,index: int) -> bool:
-        return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
+        return len(self) != 0 and (self._braid[index] + self._braid[(index+1)%len(self)] == 0)
     
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
         indices = np.array([
-            i for i in range(self._braid.shape[0])
+            i for i in range(len(self))
             if self.is_remove_sigma_inverse_pair_performable(i)])
 
         return indices
@@ -278,7 +291,7 @@ class Braid:
             performable_moves.append(self.destabilization)
         
         conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
-        conjugation_indices = (range(0, self._braid.shape[0] + 2))
+        conjugation_indices = (range(0, len(self) + 2))
         conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
             for i in conjugation_indices:
@@ -308,3 +321,6 @@ class Braid:
         if not isinstance(value, Braid):
             return NotImplemented
         return self._n == value._n and np.array_equal(self._braid, value._braid)
+    
+    def __len__(self) -> int:
+        return len(self._braid)
