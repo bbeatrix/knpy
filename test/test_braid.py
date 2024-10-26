@@ -61,21 +61,21 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_stabilization_empty(self) -> None:
         braid = Braid([])
         braid = braid.stabilization()
-        assert braid.strand_count() == 2
+        assert braid.strand_count == 2
         assert braid.notation()[-1] == 1
         assert len(braid) == 1
 
     def test_stabilization(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization()
-        assert braid.strand_count() == 5
+        assert braid.strand_count == 5
         assert braid.notation()[-1] == 4
         assert len(braid) == 4
 
     def test_stabilization_inverse(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(inverse=True)
-        assert braid.strand_count() == 5
+        assert braid.strand_count == 5
         assert braid.notation()[-1] == -4
         assert len(braid) == 4
 
@@ -88,13 +88,13 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_destabilization(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.destabilization()
-        assert braid.strand_count() == 3
+        assert braid.strand_count == 3
         assert len(braid) == 2
     
     def test_destabilization_inverse(self) -> None:
         braid = Braid([1, -2, -3])
         braid = braid.destabilization()
-        assert braid.strand_count() == 3
+        assert braid.strand_count == 3
         assert len(braid) == 2
 
     def test_destabilization_exception(self) -> None:

@@ -55,6 +55,7 @@ class Braid:
         else:
             return self._braid
 
+    @property
     def strand_count(self) -> int:
         return self._n
     
