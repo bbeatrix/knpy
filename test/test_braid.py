@@ -36,7 +36,9 @@ class TestBraidClassBraidRelationsInit:
 class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_is_destabilization_performable_empty(self) -> None:
         braid = Braid([])
-        assert not braid.is_destabilization_performable()
+        assert not braid.is_destabilization_performable(0)
+        assert not braid.is_destabilization_performable(1)
+        assert not braid.is_destabilization_performable(-1)
     
     def test_is_destabilization_performable_true1(self) -> None:
         braid = Braid([1, -2, 3, 4])
