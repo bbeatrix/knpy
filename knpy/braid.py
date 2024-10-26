@@ -239,13 +239,9 @@ class Braid:
         return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
     
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
-        if len(self._braid) < 2:
-            return np.array([])
-
-        original_braid = self._braid
-        shifted_braid = self.shift_left()._braid
-
-        indices = np.where((original_braid + shifted_braid) == 0)[0]
+        indices = np.array([
+            i for i in range(self._braid.shape[0])
+            if self.is_remove_sigma_inverse_pair_performable(i)])
 
         return indices
     
