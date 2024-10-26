@@ -293,7 +293,7 @@ class Braid:
         """
         valid_index = index<self._braid.shape[0] and index>=0
         bottom_removable = np.array_equal(
-            np.where(np.abs(self._braid) == self.strand_count)[0],
+            np.where(np.abs(self._braid) == self.strand_count - 1)[0],
             np.array([index]))
         top_removable = np.array_equal(
             np.where(np.abs(self._braid) == 1)[0],
