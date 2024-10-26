@@ -95,7 +95,7 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(index=3, on_top=True, inverse=True)
         assert braid.values()[0] == 5
-        assert braid.values()[1][3] == -1
+        assert np.all(braid.values()[1] == np.array([2, -3, 4, -1]))
         assert len(braid.values()[1]) == 4
 
     def test_stabilization_inverse(self) -> None:
@@ -115,8 +115,6 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_stabilization_inverse3(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(index=3, on_top=True, inverse=True)
-        print(f"TYPE {type(braid)}")
-        exit()
         assert braid._n == 5
         assert braid._braid[3] == -1
         assert len(braid._braid) == 4

@@ -163,11 +163,11 @@ class Braid:
             new_sigma = +1
 
         if on_top:
-            braid_stabilized = braid_stabilized+braid_stabilized.sign()
-            braid_stabilized = np.insert(braid_stabilized, new_sigma, index)
+            braid_stabilized += np.sign(braid_stabilized)
+            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
         else:
             new_sigma = new_sigma*self._n
-            braid_stabilized = np.insert(braid_stabilized, new_sigma, index)
+            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
@@ -180,7 +180,7 @@ class Braid:
             on_top = abs(self._braid[index]) == 1
             braid_destabilized = np.delete(self._braid, [index])
             if on_top:
-                braid_destabilized -= braid_destabilized.sign()
+                braid_destabilized -= np.sign(braid_destabilized)
             return Braid(braid_destabilized, copy_sigmas=False)
         else:
             raise IllegalTransformationException
