@@ -484,6 +484,31 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
-        braid = Braid(braid.conjugation(value=1, index=0))
+        braid = braid.conjugation(value=1, index=0)
         braid = braid.remove_sigma_inverse_pair(index=0)
         assert braid.values()[1][0] == 4 and braid._braid.shape[0] == 1 
+
+    def test_remove_sigma_inverse_pair_indices_empty(self):
+        braid = Braid([])
+        result = braid.remove_sigma_inverse_pair_performable_indices()
+        assert np.array_equal(result, [])
+
+    def test_remove_sigma_inverse_pair_indices(self):
+        braid = Braid([13, 42, 3, 4])
+        result = braid.remove_sigma_inverse_pair_performable_indices()
+        assert np.array_equal(result, [])
+
+    def test_remove_sigma_inverse_pair_indices2(self):
+        braid = Braid([1, -1, 2, -2, 2])
+        result = braid.remove_sigma_inverse_pair_performable_indices()
+        assert np.array_equal(result, [0, 2, 3])
+
+    def test_remove_sigma_inverse_pair_indices3(self):
+        braid = Braid([1, -1])
+        result = braid.remove_sigma_inverse_pair_performable_indices()
+        assert np.array_equal(result, [0, 1])
+
+    def test_remove_sigma_inverse_pair_indices4(self):
+        braid = Braid([1, 2, 2, 3, -1])
+        result = braid.remove_sigma_inverse_pair_performable_indices()
+        assert np.array_equal(result, [4])
