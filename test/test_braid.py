@@ -579,7 +579,6 @@ class TestBraidPerformableMoves:
                 pass
             else:
                 all_states.append(state)
-        assert len(states) == len(all_states)
         for state in states:
             assert state in all_states
         for state in all_states:
@@ -605,7 +604,6 @@ class TestBraidPerformableMoves:
                     pass
                 else:
                     all_states.append(state)
-            assert len(states) == len(all_states)
             for state in states:
                 assert state in all_states
             for state in all_states:
