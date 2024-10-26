@@ -1,6 +1,4 @@
 from functools import partial
-import sys
-import os
 from typing import Callable, List
 import pytest
 import numpy as np
@@ -13,28 +11,28 @@ from knpy import IllegalTransformationException, InvalidBraidException, IndexOut
 class TestBraidClassBraidRelationsInit:
     def test_init_empty(self) -> None:
         braid = Braid([])
-        assert braid._n == 1
-        assert braid._braid.shape[0] == 0
+        assert braid.strand_count == 1
+        assert braid.notation().shape[0] == 0
 
     def test_init(self) -> None:
         braid = Braid([1, 2, 3])
-        assert braid._n == 4
-        assert braid._braid.shape[0] == 3
+        assert braid.strand_count == 4
+        assert braid.notation().shape[0] == 3
 
     def test_init_from_database(self) -> None:
         braid = Braid("3_1")
-        assert braid._n == 2
-        assert braid._braid.shape[0] == 3
-        assert np.all(braid._braid == np.array([1, 1, 1]))
+        assert braid.strand_count == 2
+        assert braid.notation().shape[0] == 3
+        assert np.all(braid.notation() == np.array([1, 1, 1]))
 
     def test_values(self) -> None:
         braid = Braid([1, 2, 3])
-        assert braid._n == braid.values()[0]
-        assert braid._braid.shape[0] == braid.values()[1].shape[0]
+        assert braid.strand_count == braid.values()[0]
+        assert braid.notation().shape[0] == braid.values()[1].shape[0]
 
     def test_init_exception(self) -> None:
         with pytest.raises(InvalidBraidException):
-            braid = Braid([1, 0, -1, 2, 3])
+            Braid([1, 0, -1, 2, 3])
 
 
 class TestBraidClassBraidRelationsStabilizationDestabilization:
@@ -119,9 +117,9 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     def test_stabilization_inverse3(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(index=3, on_top=True, inverse=True)
-        assert braid._n == 5
-        assert braid._braid[3] == -1
-        assert len(braid._braid) == 4
+        assert braid.strand_count == 5
+        assert braid.notation()[3] == -1
+        assert len(braid.notation()) == 4
 
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
@@ -523,34 +521,34 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair1(self):
         braid = Braid([2, 1, -1, 3])
-        values = braid.remove_sigma_inverse_pair(index=1)._braid
+        values = braid.remove_sigma_inverse_pair(index=1).notation()
         assert values[0] == 2 and values[1] == 3
 
     def test_remove_sigma_inverse_pair2(self):
         braid = Braid([3, 1, 2, -2])
-        values = braid.remove_sigma_inverse_pair(index=2)._braid
+        values = braid.remove_sigma_inverse_pair(index=2).notation()
         assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair3(self):
         braid = Braid([-2, 3, 1, 2])
-        values = braid.remove_sigma_inverse_pair(index=3)._braid
+        values = braid.remove_sigma_inverse_pair(index=3).notation()
         assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair4(self):
         braid = Braid([2, 3, 1, -2])
-        values = braid.remove_sigma_inverse_pair(index=3)._braid
+        values = braid.remove_sigma_inverse_pair(index=3).notation()
         assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair5(self):
         braid = Braid([-2, 2, 1, 3])
-        values = braid.remove_sigma_inverse_pair(index=0)._braid
+        values = braid.remove_sigma_inverse_pair(index=0).notation()
         assert values[0] == 1 and values[1] == 3
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
         braid = braid.conjugation(value=1, index=0)
         braid = braid.remove_sigma_inverse_pair(index=0)
-        assert braid.notation()[0] == 4 and braid._braid.shape[0] == 1
+        assert braid.notation()[0] == 4 and braid.notation().shape[0] == 1
 
     def test_remove_sigma_inverse_pair_indices_empty(self):
         braid = Braid([])
@@ -639,7 +637,7 @@ class TestBraidPerformableMoves:
         for move in all_moves:
             try:
                 state = move()
-            except IllegalTransformationException as e:
+            except IllegalTransformationException:
                 pass
             else:
                 all_states.append(state)
@@ -651,7 +649,7 @@ class TestBraidPerformableMoves:
     @pytest.mark.parametrize("low, high, size", [[0, 1, 10], [-5, 5, 1], [-1, 1, 10], [-5, 5, 15]])
     def test_performable_moves_random(self, low, high, size):
         rng = np.random.default_rng(42)
-        for i in range(50):
+        for _ in range(50):
             sigmas = rng.integers(low, high, size)
             braid = Braid(np.where(sigmas == 0, 1, sigmas))
             performable_moves = braid.performable_moves()
@@ -665,7 +663,7 @@ class TestBraidPerformableMoves:
             for move in all_moves:
                 try:
                     state = move()
-                except IllegalTransformationException as e:
+                except IllegalTransformationException:
                     pass
                 else:
                     all_states.append(state)

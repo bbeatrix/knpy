@@ -2,7 +2,6 @@ from typing import Callable
 import numpy as np
 import torch
 import braidvisualiser as bv
-import warnings
 from functools import partial
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
@@ -210,7 +209,7 @@ class Braid:
         braid generator.
         """
 
-        if index == None:
+        if index is None:
             index = self._braid.shape[0]
 
         assert isinstance(index, int)
@@ -245,7 +244,7 @@ class Braid:
                 braid_destabilized -= np.sign(braid_destabilized)
             return Braid(braid_destabilized, copy_sigmas=False)
         else:
-            raise IllegalTransformationException(f"Destabilization is not performable")
+            raise IllegalTransformationException("Destabilization is not performable")
 
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
         """
@@ -355,7 +354,7 @@ class Braid:
         Helper function to determine if destabilisation move is performable
         at given index location, at either the top or bottom strand.
         """
-        valid_index = index < self._braid.shape[0] and index >= 0
+        valid_index = 0 <= index < self._braid.shape[0]
         bottom_removable = np.array_equal(np.where(np.abs(self._braid) == self.strand_count - 1)[0], np.array([index]))
         top_removable = np.array_equal(np.where(np.abs(self._braid) == 1)[0], np.array([index]))
         return valid_index and (bottom_removable or top_removable)

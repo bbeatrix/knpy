@@ -5,7 +5,7 @@ BRAID_PATH = "data_knots/prime_knots_in_braid_notation.csv"
 current_dir = os.path.dirname(__file__)
 file_path = os.path.join(current_dir, BRAID_PATH)
 
-knots_in_braid_notation_dict = dict()
+knots_in_braid_notation_dict = {}
 with open(file_path, "r") as file:
     for i, line in enumerate(file):
         if i == 0:
