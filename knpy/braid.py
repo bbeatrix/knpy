@@ -293,8 +293,11 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = [self.shift_left,self.shift_right,partial(self.stabilization,inverse=True), partial(self.stabilization,inverse=False)] #Always performable
-
+        performable_moves: list[BraidTransformation] = [partial(self.stabilization,inverse=True), partial(self.stabilization,inverse=False)] #Always performable
+        print(self._n)
+        if len(self._braid) > 1:
+            performable_moves.append(self.shift_left)
+            performable_moves.append(self.shift_right)
         if self.is_destabilization_performable():
             performable_moves.append(self.destabilization)
         
