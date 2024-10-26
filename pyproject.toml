@@ -26,7 +26,8 @@ disable = ["raw-checker-failed",
         "too-many-arguments",
         "too-many-branches",
         "too-many-statements",
-        "too-many-instance-attributes"]
+        "too-many-instance-attributes",
+        "too-many-public-methods"]
 
 [tool.mypy]
 ignore_missing_imports = true
