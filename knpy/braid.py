@@ -163,26 +163,47 @@ class Braid:
         else:
             raise IllegalTransformationException(f"Conjugation is not performable at index {index}")
 
-    def stabilization(self,inverse: bool = False) -> 'Braid':
+    def stabilization(self, index: int | None = None, on_top = False, inverse: bool = False) -> 'Braid':
         """
-        Performs stabilization move.
+        Performs stabilization move before specified crossing index, either 
+        at the top or bottom thread, inserting either a positive or negative
+        braid generator.
         """
+
+        if index == None:
+            index = self._braid.shape[0]
+        
+        assert isinstance(index, int)
+
+        if index<0 or index>self._braid.shape[0]:
+            raise IndexOutOfRangeException('Index must be between 0 and length of braid')
+
+        braid_stabilized = self._braid.copy()
         if inverse:
-            braid_stabilized = np.concatenate((self._braid,np.array([-self._n])))
+            new_sigma = -1
         else:
-            braid_stabilized = np.concatenate((self._braid,np.array([self._n])))
+            new_sigma = +1
+
+        if on_top:
+            braid_stabilized += np.sign(braid_stabilized)
+            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
+        else:
+            new_sigma = new_sigma*self.strand_count
+            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
-    def destabilization(self) -> 'Braid':
+    def destabilization(self, index: int) -> 'Braid':
         """
-        Performs destabilization move.
+        Performs destabilization move at given index location, results in
+        a braid with one fewer crossings and one fewer strands.
         """
-        if self.is_destabilization_performable() :
-            braid_destabilized = self._braid[:-1].copy()
-
+        if self.is_destabilization_performable(index) :
+            on_top = abs(self._braid[index]) == 1
+            braid_destabilized = np.delete(self._braid, [index])
+            if on_top:
+                braid_destabilized -= np.sign(braid_destabilized)
             return Braid(braid_destabilized, copy_sigmas=False)
-
         else:
             raise IllegalTransformationException(f"Destabilization is not performable")
     
@@ -268,9 +289,20 @@ class Braid:
 
         return True
     
-    def is_destabilization_performable(self) -> bool:
-        return len(self) != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
-    
+    def is_destabilization_performable(self, index: int) -> bool:
+        """
+        Helper function to determine if destabilisation move is performable
+        at given index location, at either the top or bottom strand.
+        """
+        valid_index = index<self._braid.shape[0] and index>=0
+        bottom_removable = np.array_equal(
+            np.where(np.abs(self._braid) == self.strand_count - 1)[0],
+            np.array([index]))
+        top_removable = np.array_equal(
+            np.where(np.abs(self._braid) == 1)[0],
+            np.array([index]))
+        return valid_index and (bottom_removable or top_removable)
+
     def is_remove_sigma_inverse_pair_performable(self,index: int) -> bool:
         if index < -len(self):
             raise IndexOutOfRangeException(f"index = {index} too small, must by at least -length = {-len(self)}")
@@ -293,12 +325,17 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = [partial(self.stabilization,inverse=True), partial(self.stabilization,inverse=False)] #Always performable
-        if len(self._braid) > 1:
-            performable_moves.append(self.shift_left)
-            performable_moves.append(self.shift_right)
-        if self.is_destabilization_performable():
-            performable_moves.append(self.destabilization)
+        performable_moves: list[BraidTransformation] = []
+
+        for i in range(0, len(self)):
+            if self.is_destabilization_performable(i):
+                performable_moves.extend([partial(self.destabilization, i)])
+
+        for i in range(0, len(self) + 1):
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=False)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=True)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=False)])
+            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=True)])
         
         conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
         conjugation_indices = (range(0, len(self) + 2))

@@ -36,73 +36,121 @@ class TestBraidClassBraidRelationsInit:
 
 
 class TestBraidClassBraidRelationsStabilizationDestabilization:
+    def test_is_destabilization_performable_negative_index(self) -> None:
+        braid = Braid([-3, 1, -2, -1, -3])
+        for i in range(10):
+            assert not braid.is_destabilization_performable(-i)
+
     def test_is_destabilization_performable_empty(self) -> None:
         braid = Braid([])
-        assert not braid.is_destabilization_performable()
+        assert not braid.is_destabilization_performable(0)
+        assert not braid.is_destabilization_performable(1)
+        assert not braid.is_destabilization_performable(-1)
     
     def test_is_destabilization_performable_true1(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert braid.is_destabilization_performable()
+        assert braid.is_destabilization_performable(0)
+        assert braid.is_destabilization_performable(3)
     
     def test_is_destabilization_performable_true2(self) -> None:
         braid = Braid([1, -2, -3])
-        assert braid.is_destabilization_performable()
-    
+        assert braid.is_destabilization_performable(0)
+        assert braid.is_destabilization_performable(2)
+        
     def test_is_destabilization_performable_false1(self) -> None:
-        braid = Braid([-3, 1, -2, -3])
-        assert not braid.is_destabilization_performable()
+        braid = Braid([-3, 1, -2, -1, -3])
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_is_destabilization_performable_false2(self) -> None:
-        braid = Braid([ 1, -2, -3, 1])
-        assert not braid.is_destabilization_performable()
+        braid = Braid([ 1, -2, -3, 1, 3])
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_is_destabilization_performable_false3(self) -> None:
         braid = Braid([ 1, -2, -3, 1, 4, -4])
-        assert not braid.is_destabilization_performable()
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_stabilization_empty(self) -> None:
         braid = Braid([])
-        braid = braid.stabilization()
+        braid = braid.stabilization(index=0, on_top=False, inverse=False)
         assert braid.strand_count == 2
-        assert braid.notation()[-1] == 1
-        assert len(braid) == 1
+        assert braid.notation()[0] == 1
+        assert len(braid.values()[1]) == 1
 
     def test_stabilization(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.stabilization()
+        braid = braid.stabilization(index=1, on_top=False, inverse=False)
         assert braid.strand_count == 5
-        assert braid.notation()[-1] == 4
+        assert braid.notation()[1] == 4
+        assert len(braid.values()[1]) == 4
+
+    def test_stabilization2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=False, inverse=False)
+        assert braid.strand_count == 5
+        assert braid.notation()[3] == 4
+        assert len(braid.values()[1]) == 4
+
+    def test_stabilization3(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=True, inverse=True)
+        assert braid.strand_count == 5
+        assert np.all(braid.notation() == np.array([2, -3, 4, -1]))
         assert len(braid) == 4
 
     def test_stabilization_inverse(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.stabilization(inverse=True)
+        braid = braid.stabilization(index=1, on_top=False, inverse=True)
         assert braid.strand_count == 5
-        assert braid.notation()[-1] == -4
+        assert braid.notation()[1] == -4
         assert len(braid) == 4
+
+    def test_stabilization_inverse2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=False, inverse=True)
+        assert braid.strand_count == 5
+        assert braid.notation()[3] == -4
+        assert len(braid) == 4
+
+    def test_stabilization_inverse3(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=True, inverse=True)
+        assert braid._n == 5
+        assert braid._braid[3] == -1
+        assert len(braid._braid) == 4
 
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
         with pytest.raises(IllegalTransformationException):
-            braid = braid.destabilization() 
-
+            braid = braid.destabilization(index=0) 
 
     def test_destabilization(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.destabilization()
-        assert braid.strand_count == 3
-        assert len(braid) == 2
+        braid = braid.destabilization(index=2)
+        assert np.all(braid.notation() == np.array([1, -2]))
+
+    def test_destabilization2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.destabilization(index=0)
+        assert np.all(braid.notation() == np.array([-1, 2]))
     
     def test_destabilization_inverse(self) -> None:
         braid = Braid([1, -2, -3])
-        braid = braid.destabilization()
-        assert braid.strand_count == 3
-        assert len(braid) == 2
+        braid = braid.destabilization(index=2)
+        assert np.all(braid.notation() == np.array([1, -2]))
+
+    def test_destabilization_inverse2(self) -> None:
+        braid = Braid([-1, -2, -3])
+        braid = braid.destabilization(index=0)
+        assert np.all(braid.notation() == np.array([-1, -2]))
 
     def test_destabilization_exception(self) -> None:
-        braid = Braid([-3 ,1, -2, 3])
-        with pytest.raises(IllegalTransformationException):
-            braid = braid.destabilization() 
+        braid = Braid([-3 ,1, -2, 3, 1])
+        for i in range(5):
+            with pytest.raises(IllegalTransformationException):
+                braid = braid.destabilization(index=i)
 
 class TestBraidClassBraidRelationsConjugation:
     def test_is_conjugation_performable_empty(self) -> None:
@@ -534,9 +582,16 @@ class TestBraidPerformableMoves:
             move()
     
     def get_all_moves(self, braid):
-        performable_moves = [braid.shift_left,braid.shift_right,partial(braid.stabilization,inverse=True), partial(braid.stabilization,inverse=False)] #Always performable
+        performable_moves = [] #Always performable
 
-        performable_moves.append(braid.destabilization)
+        for i in range(0, len(braid)):
+            performable_moves.extend([partial(braid.destabilization, i)])
+
+        for i in range(0, len(braid) + 1):
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=False, inverse=False)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=False, inverse=True)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=True, inverse=False)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=True, inverse=True)])
         
         conjugation_values = list(range(-braid.strand_count+1,0)) + list(range(1,braid.strand_count))
         conjugation_indices = (range(0, len(braid) + 2))
