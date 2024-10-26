@@ -5,7 +5,7 @@ class IllegalTransformationException(Exception):
     Attributes:
         message -- explanation of the error
     """
-    def __init__(self, message="Illegal transformation attempted"):
+    def __init__(self, message: str ="Illegal transformation attempted"):
         self.message = message
         super().__init__(f"{self.message}")
 
@@ -16,7 +16,7 @@ class InvalidBraidException(Exception):
     Attributes:
         message -- explanation of the error
     """
-    def __init__(self, message="Invalid braid, should not contain zero"):
+    def __init__(self, message: str ="Invalid braid, should not contain zero"):
         self.message = message
         super().__init__(f"{self.message}")
 
@@ -27,6 +27,6 @@ class IndexOutOfRangeException(Exception):
     Attributes:
         message -- explanation of the error
     """
-    def __init__(self, message="Index is out of range"):
+    def __init__(self, message: str ="Index is out of range"):
         self.message = message
         super().__init__(f"{self.message}")
