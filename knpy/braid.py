@@ -176,7 +176,7 @@ class Braid:
         assert isinstance(index, int)
 
         if index<0 or index>self._braid.shape[0]:
-            raise IllegalTransformationException('Index must be between 0 and length of braid')
+            raise IndexOutOfRangeException('Index must be between 0 and length of braid')
 
         braid_stabilized = self._braid.copy()
         if inverse:
@@ -188,7 +188,7 @@ class Braid:
             braid_stabilized += np.sign(braid_stabilized)
             braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
         else:
-            new_sigma = new_sigma*self._n
+            new_sigma = new_sigma*self.strand_count
             braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
 
         return Braid(braid_stabilized, copy_sigmas=False)
