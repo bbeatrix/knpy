@@ -138,6 +138,7 @@ class Braid:
         4: -a 0 1 2 a
         ```
         """
+        # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but is kept here to be sure.
         if self.is_conjugation_performable(value, index):
             
             if index == self._braid.shape[0] + 1:
