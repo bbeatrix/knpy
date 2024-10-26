@@ -408,27 +408,27 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
     
     def test_remove_sigma_inverse_pair1(self):
         braid = Braid([2, 1, -1, 3])
-        print(braid.remove_sigma_inverse_pair(index=1))
-        assert braid.remove_sigma_inverse_pair(index=1).shape[0] == 2
+        values = braid.remove_sigma_inverse_pair(index=1)._braid
+        assert values[0] == 2 and values[1] == 3
 
     def test_remove_sigma_inverse_pair2(self):
         braid = Braid([3, 1, 2, -2])
-        assert braid.remove_sigma_inverse_pair(index=2).shape[0] == 2
+        assert braid.remove_sigma_inverse_pair(index=2)._braid.shape[0] == 2
 
     def test_remove_sigma_inverse_pair3(self):
         braid = Braid([-2, 3, 1, 2])
-        assert braid.remove_sigma_inverse_pair(index=3).shape[0] == 2
+        assert braid.remove_sigma_inverse_pair(index=3)._braid.shape[0] == 2
 
     def test_remove_sigma_inverse_pair4(self):
         braid = Braid([2, 3, 1, -2])
-        assert braid.remove_sigma_inverse_pair(index=3).shape[0] == 2
+        assert braid.remove_sigma_inverse_pair(index=3)._braid.shape[0] == 2
 
     def test_remove_sigma_inverse_pair5(self):
         braid = Braid([-2, 2, 1, 3])
-        assert braid.remove_sigma_inverse_pair(index=0).shape[0] == 2
+        assert braid.remove_sigma_inverse_pair(index=0)._braid.shape[0] == 2
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
         braid = Braid(braid.conjugation(value=1, index=0))
-        braid = Braid(braid.remove_sigma_inverse_pair(index=0))
-        assert braid.values()[1][0] == 4 and braid.values()[1].shape[0] == 1 
+        braid = braid.remove_sigma_inverse_pair(index=0)
+        assert braid.values()[1][0] == 4 and braid._braid.shape[0] == 1 

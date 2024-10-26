@@ -201,8 +201,8 @@ class Braid:
             elif index == self._braid.shape[0] - 1:
                 modified_braid = self._braid[1:-1]
             else:
-                modified_braid = np.concatenate((self._braid[:(index - 1)], self._braid[(index + 1):]))
-            return modified_braid
+                modified_braid = np.concatenate((self._braid[:(index)], self._braid[(index + 2):]))
+            return Braid(modified_braid)
         else:
             raise IllegalTransformationException
 
