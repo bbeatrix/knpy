@@ -1,10 +1,10 @@
 from functools import partial
-from typing import Callable, List
 import pytest
 import numpy as np
 
 # IMPORTANT: knpy should be installed first
 from knpy import Braid
+from knpy.braid import BraidTransformation
 from knpy import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
 
@@ -585,7 +585,7 @@ class TestBraidPerformableMoves:
             move()
 
     def get_all_moves(self, braid):
-        performable_moves = []  # Always performable
+        performable_moves: list[BraidTransformation] = []  # Always performable
 
         for i in range(0, len(braid)):
             performable_moves.extend([partial(braid.destabilization, i)])
@@ -598,7 +598,7 @@ class TestBraidPerformableMoves:
 
         conjugation_values = list(range(-braid.strand_count + 1, 0)) + list(range(1, braid.strand_count))
         conjugation_indices = range(0, len(braid) + 2)
-        conjugation_performable_moves: List[Callable[[], Braid]] = []
+        conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
             for i in conjugation_indices:
                 conjugation_performable_moves = conjugation_performable_moves + [
