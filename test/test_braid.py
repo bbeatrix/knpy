@@ -582,9 +582,16 @@ class TestBraidPerformableMoves:
             move()
     
     def get_all_moves(self, braid):
-        performable_moves = [braid.shift_left,braid.shift_right,partial(braid.stabilization,inverse=True), partial(braid.stabilization,inverse=False)] #Always performable
+        performable_moves = [] #Always performable
 
-        performable_moves.append(braid.destabilization)
+        for i in range(0, len(braid)):
+            performable_moves.extend([partial(braid.destabilization, i)])
+
+        for i in range(0, len(braid) + 1):
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=False, inverse=False)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=False, inverse=True)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=True, inverse=False)])
+            performable_moves.extend([partial(braid.stabilization, index=i, on_top=True, inverse=True)])
         
         conjugation_values = list(range(-braid.strand_count+1,0)) + list(range(1,braid.strand_count))
         conjugation_indices = (range(0, len(braid) + 2))
