@@ -30,6 +30,7 @@ class Braid:
                 self._braid = sigmas.copy()
             else:
                 self._braid = sigmas
+            self._braid = self._braid.astype(np.integer)
         else:
             if not all(isinstance(x, (int, np.integer)) for x in sigmas):
                 raise InvalidBraidException(
@@ -369,6 +370,29 @@ class Braid:
         indices = np.array([i for i in range(len(self)) if self.is_remove_sigma_inverse_pair_performable(i)])
 
         return indices
+    
+    def performable_rel2(self) -> list[BraidTransformation]:
+        braid_relation2_indices = self.braid_relation2_performable_indices()
+        braid_relation2_performable_moves: list[BraidTransformation] = [
+            partial(self.braid_relation2, index=i) for i in braid_relation2_indices
+        ]
+        return braid_relation2_performable_moves
+    
+    def performable_collapse(self) -> list[BraidTransformation]:
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
+
+        for i in range(0, len(self)):
+            if self.is_destabilization_performable(i):
+                performable_moves.extend([partial(self.destabilization, i)])
+
+        braid_remove_sigma_inverse_pairs = self.remove_sigma_inverse_pair_performable_indices()
+        braid_remove_sigma_inverse_pair_moves: list[BraidTransformation] = [
+            partial(self.remove_sigma_inverse_pair, index=i) for i in braid_remove_sigma_inverse_pairs
+        ]
+
+        performable_moves += braid_remove_sigma_inverse_pair_moves
+        
+        return performable_moves
 
     def performable_moves(self) -> list[BraidTransformation]:
         """
@@ -377,7 +401,7 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = []
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
 
         for i in range(0, len(self)):
             if self.is_destabilization_performable(i):
@@ -393,7 +417,7 @@ class Braid:
         conjugation_indices = range(0, len(self) + 2)
         conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
-            for i in conjugation_indices:
+            for i in [0]:
                 if self.is_conjugation_performable(v, i):
                     conjugation_performable_moves = conjugation_performable_moves + [
                         partial(self.conjugation, value=v, index=i)
@@ -431,3 +455,6 @@ class Braid:
 
     def __len__(self) -> int:
         return len(self._braid)
+    
+    def __lt__(self, other):
+         return self.strand_count < other.strand_count
