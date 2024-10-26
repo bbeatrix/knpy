@@ -38,7 +38,7 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
         braid = Braid([-3, 1, -2, -1, -3])
         for i in range(10):
             assert not braid.is_destabilization_performable(-i)
-            
+
     def test_is_destabilization_performable_empty(self) -> None:
         braid = Braid([])
         assert not braid.is_destabilization_performable(0)
@@ -541,7 +541,7 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
-        braid = Braid(braid.conjugation(value=1, index=0))
+        braid = braid.conjugation(value=1, index=0)
         braid = braid.remove_sigma_inverse_pair(index=0)
         assert braid.notation()[0] == 4 and braid._braid.shape[0] == 1 
 
