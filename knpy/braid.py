@@ -29,7 +29,7 @@ class Braid:
                 self._braid = sigmas
         else:
             if not all(isinstance(x, (int, np.integer)) for x in sigmas):
-                raise InvalidBraidException
+                raise InvalidBraidException(f"Unable to create braid from {type(sigmas)}, an element is not instance of int or np.integer")
             self._braid = np.array(sigmas)
         
         if np.any(self._braid == 0):
@@ -113,7 +113,7 @@ class Braid:
 
             return Braid(transformed_braid, copy_sigmas=False)
         else:
-            raise IllegalTransformationException
+            raise IllegalTransformationException(f"Braid relation 1 is not performable at index {index}")
 
     def braid_relation2(self,index: int) -> 'Braid':
         """
@@ -132,7 +132,7 @@ class Braid:
 
             return Braid(transformed_braid, copy_sigmas=False)
         else:
-            raise IllegalTransformationException
+            raise IllegalTransformationException(f"Braid relation 2 is not performable at index {index}")
 
     #Markov moves
     def conjugation(self,value: int,index: int) -> 'Braid':
@@ -161,7 +161,7 @@ class Braid:
 
             return Braid(conjugated_braid, copy_sigmas=False)
         else:
-            raise IllegalTransformationException
+            raise IllegalTransformationException(f"Conjugation is not performable at index {index}")
 
     def stabilization(self,inverse: bool = False) -> 'Braid':
         """
@@ -184,7 +184,7 @@ class Braid:
             return Braid(braid_destabilized, copy_sigmas=False)
 
         else:
-            raise IllegalTransformationException
+            raise IllegalTransformationException(f"Destabilization is not performable")
     
     def remove_sigma_inverse_pair(self,index: int) -> 'Braid':
         """
@@ -202,7 +202,7 @@ class Braid:
                 modified_braid = np.concatenate((self._braid[:(index)], self._braid[(index + 2):]))
             return Braid(modified_braid)
         else:
-            raise IllegalTransformationException
+            raise IllegalTransformationException(f"Sigma inverse pair is not removable at index {index}")
 
 
     #Chech whether a move is performable or not
