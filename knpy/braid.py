@@ -300,3 +300,6 @@ class Braid:
         if not isinstance(value, Braid):
             return NotImplemented
         return self._n == value._n and np.array_equal(self._braid, value._braid)
+    
+    def __len__(self) -> int:
+        return len(self._braid)
