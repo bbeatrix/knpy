@@ -322,10 +322,17 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = [self.shift_left,self.shift_right,partial(self.stabilization,inverse=True), partial(self.stabilization,inverse=False)] #Always performable
+        performable_moves: list[BraidTransformation] = []
 
-        if self.is_destabilization_performable():
-            performable_moves.append(self.destabilization)
+        for i in range(0, len(self)):
+            if self.is_destabilization_performable(i):
+                performable_moves.append([partial(self.destabilization, i)])
+
+        for i in range(0, len(self) + 1):
+            performable_moves.append([partial(self.stabilization, index=i, on_top=False, inverse=False)])
+            performable_moves.append([partial(self.stabilization, index=i, on_top=False, inverse=True)])
+            performable_moves.append([partial(self.stabilization, index=i, on_top=True, inverse=False)])
+            performable_moves.append([partial(self.stabilization, index=i, on_top=True, inverse=True)])
         
         conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
         conjugation_indices = (range(0, len(self) + 2))
