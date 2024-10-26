@@ -413,19 +413,23 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair2(self):
         braid = Braid([3, 1, 2, -2])
-        assert braid.remove_sigma_inverse_pair(index=2)._braid.shape[0] == 2
+        values = braid.remove_sigma_inverse_pair(index=2)._braid
+        assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair3(self):
         braid = Braid([-2, 3, 1, 2])
-        assert braid.remove_sigma_inverse_pair(index=3)._braid.shape[0] == 2
+        values = braid.remove_sigma_inverse_pair(index=3)._braid
+        assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair4(self):
         braid = Braid([2, 3, 1, -2])
-        assert braid.remove_sigma_inverse_pair(index=3)._braid.shape[0] == 2
+        values = braid.remove_sigma_inverse_pair(index=3)._braid
+        assert values[0] == 3 and values[1] == 1
 
     def test_remove_sigma_inverse_pair5(self):
         braid = Braid([-2, 2, 1, 3])
-        assert braid.remove_sigma_inverse_pair(index=0)._braid.shape[0] == 2
+        values = braid.remove_sigma_inverse_pair(index=0)._braid
+        assert values[0] == 1 and values[1] == 3
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
