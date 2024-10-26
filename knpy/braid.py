@@ -255,13 +255,12 @@ class Braid:
         Helper function to determine if destabilisation move is performable
         at given index location, at either the top or bottom strand.
         """
-
         valid_index = index<self._braid.shape[0] and index>=0
         bottom_removable = np.array_equal(
-            np.where(np.abs(self._braid) == self._n - 1),
+            np.where(np.abs(self._braid) == self._n - 1)[0],
             np.array([index]))
         top_removable = np.array_equal(
-            np.where(np.abs(self._braid) == 1),
+            np.where(np.abs(self._braid) == 1)[0],
             np.array([index]))
         return valid_index and (bottom_removable or top_removable)
 
