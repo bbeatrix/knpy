@@ -45,6 +45,18 @@ class Braid:
         Returns (self._n,self._braid) values as tuple
         """
         return (self._n,self._braid.copy())
+
+    def notation(self, copy = True) -> BraidNotation:
+        """
+        Returns numpy array of sigmas
+        """
+        if copy:
+            return self._braid.copy()
+        else:
+            return self._braid
+
+    def strand_count(self) -> int:
+        return self._n
     
     def to_torch(self) -> torch.Tensor:
         """
@@ -61,7 +73,7 @@ class Braid:
     def shift_left(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
 
         if amount >= len(self._braid) or amount <= -len(self._braid):
@@ -73,7 +85,7 @@ class Braid:
     def shift_right(self, amount: int=1) -> 'Braid':
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
 
         if amount >= len(self._braid) or amount <= -len(self._braid):
@@ -88,7 +100,7 @@ class Braid:
 
         The elements of the chuck must be distict, so the braid must consist of at least 3 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).
 
-        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
         if self.is_braid_relation1_performable(index):
             signs = np.ones(3,)
@@ -108,7 +120,7 @@ class Braid:
 
         The elements of the chuck must be distict, so the braid must consist of at least 2 crossings. The braid is assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some elements from the beginning).        
 
-        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
         if self.is_braid_relation2_performable(index):
             # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index = len(self._braid) - 1`.
@@ -191,7 +203,7 @@ class Braid:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
 
-        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
         if len(self._braid) < 3:
             return False
@@ -203,7 +215,7 @@ class Braid:
         """
         Returns array of indices where braid relation 1 is performable. See documentation of member function `braid_relation1` for details.
 
-        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid.values()[1]))
+        returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid.notation()))
         """
         positions = []
         for index in range(len(self._braid)):
