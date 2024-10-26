@@ -239,13 +239,9 @@ class Braid:
         return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
     
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
-        if len(self._braid) < 2:
-            return np.array([])
-
-        original_braid = self._braid
-        shifted_braid = self.shift_left()._braid
-
-        indices = np.where((original_braid + shifted_braid) == 0)[0]
+        indices = np.array([
+            i for i in range(self._braid.shape[0])
+            if self.is_remove_sigma_inverse_pair_performable(i)])
 
         return indices
     
@@ -256,13 +252,18 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = [self.shift_left,self.shift_right,self.stabilization,partial(self.stabilization,inverse=True)] #Always performable
+        performable_moves: list[BraidTransformation] = [self.shift_left,self.shift_right,partial(self.stabilization,inverse=True), partial(self.stabilization,inverse=False)] #Always performable
 
         if self.is_destabilization_performable():
             performable_moves.append(self.destabilization)
         
-        conjugation_indices = list(range(-self._n+1,0)) + list(range(1,self._n))
-        conjugation_performable_moves: list[BraidTransformation] = [partial(self.conjugation,index=i) for i in conjugation_indices]
+        conjugation_values = list(range(-self._n+1,0)) + list(range(1,self._n))
+        conjugation_indices = (range(0, self._braid.shape[0] + 2))
+        conjugation_performable_moves: list[BraidTransformation] = []
+        for v in conjugation_values:
+            for i in conjugation_indices:
+                if self.is_conjugation_performable(v, i):
+                    conjugation_performable_moves = conjugation_performable_moves + [partial(self.conjugation,value=v,index=i)]
 
         performable_moves = performable_moves + conjugation_performable_moves
 
@@ -276,10 +277,10 @@ class Braid:
 
         performable_moves = performable_moves + braid_relation2_performable_moves
 
-        braid_remove_sigma_and_inverse = self.remove_sigma_inverse_pair_performable_indices()
-        braid_remove_sigma_and_inverse_moves: list[BraidTransformation] = [partial(self.remove_sigma_inverse_pair,index=i) for i in braid_remove_sigma_and_inverse]
+        braid_remove_sigma_inverse_pairs = self.remove_sigma_inverse_pair_performable_indices()
+        braid_remove_sigma_inverse_pair_moves: list[BraidTransformation] = [partial(self.remove_sigma_inverse_pair,index=i) for i in braid_remove_sigma_inverse_pairs]
 
-        performable_moves = performable_moves + braid_remove_sigma_and_inverse_moves
+        performable_moves = performable_moves + braid_remove_sigma_inverse_pair_moves
 
         return performable_moves
 
