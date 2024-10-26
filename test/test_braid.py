@@ -484,6 +484,6 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
-        braid = Braid(braid.conjugation(value=1, index=0))
+        braid = braid.conjugation(value=1, index=0)
         braid = braid.remove_sigma_inverse_pair(index=0)
         assert braid.values()[1][0] == 4 and braid._braid.shape[0] == 1 
