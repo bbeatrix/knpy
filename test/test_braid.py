@@ -26,7 +26,7 @@ class TestBraidClassBraidRelationsInit:
     def test_values(self) -> None:
         braid = Braid([1,2,3])
         assert braid._n == braid.strand_count()
-        assert braid._braid.shape[0] == braid.notation().shape[0]
+        assert braid._braid.shape[0] == len(braid)
 
     def test_init_exception(self) -> None:
         with pytest.raises(InvalidBraidException):
@@ -63,21 +63,21 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
         braid = braid.stabilization()
         assert braid.strand_count() == 2
         assert braid.notation()[-1] == 1
-        assert len(braid.notation()) == 1
+        assert len(braid) == 1
 
     def test_stabilization(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization()
         assert braid.strand_count() == 5
         assert braid.notation()[-1] == 4
-        assert len(braid.notation()) == 4
+        assert len(braid) == 4
 
     def test_stabilization_inverse(self) -> None:
         braid = Braid([1, -2, 3])
         braid = braid.stabilization(inverse=True)
         assert braid.strand_count() == 5
         assert braid.notation()[-1] == -4
-        assert len(braid.notation()) == 4
+        assert len(braid) == 4
 
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
@@ -89,13 +89,13 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
         braid = Braid([1, -2, 3])
         braid = braid.destabilization()
         assert braid.strand_count() == 3
-        assert len(braid.notation()) == 2
+        assert len(braid) == 2
     
     def test_destabilization_inverse(self) -> None:
         braid = Braid([1, -2, -3])
         braid = braid.destabilization()
         assert braid.strand_count() == 3
-        assert len(braid.notation()) == 2
+        assert len(braid) == 2
 
     def test_destabilization_exception(self) -> None:
         braid = Braid([-3 ,1, -2, 3])
@@ -240,12 +240,12 @@ class TestBraidClassBraidRelationsBraidRelation1:
 
     def test_is_braid_relation1_performable_mixed(self) -> None:
         braid = Braid([2, 2, 1, -2, 1])
-        for i in range(len(braid.notation())):
+        for i in range(len(braid)):
             assert braid.is_braid_relation1_performable(i) == (i in [1, 3])
     
     def test_is_braid_relation1_performable_mixed_negative(self) -> None:
         braid = Braid([2, 2, 1, -2, 1])
-        for i in range(len(braid.notation()), 0):
+        for i in range(len(braid), 0):
             assert braid.is_braid_relation1_performable(i) == (i in [-4, -2])
     
     def test_is_braid_relation1_performable_indices_empty(self) -> None:
