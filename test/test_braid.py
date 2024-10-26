@@ -25,8 +25,8 @@ class TestBraidClassBraidRelationsInit:
     
     def test_values(self) -> None:
         braid = Braid([1,2,3])
-        assert braid._n == braid.strand_count()
-        assert braid._braid.shape[0] == len(braid)
+        assert braid._n == braid.values()[0]
+        assert braid._braid.shape[0] == braid.values()[1].shape[0]
 
     def test_init_exception(self) -> None:
         with pytest.raises(InvalidBraidException):
