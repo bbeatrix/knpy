@@ -171,7 +171,7 @@ class Braid:
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
-    def destabilization(self) -> 'Braid':
+    def destabilization(self, index: int = None) -> 'Braid':
         """
         Performs destabilization move.
         """
@@ -248,9 +248,21 @@ class Braid:
     def is_conjugation_performable(self,value: int, index: int) -> bool:
         return value != 0 and self._n>abs(value) and 0 <= index and index <= self._braid.shape[0] + 1
     
-    def is_destabilization_performable(self) -> bool:
-        return self._braid.shape[0] != 0 and abs(self._braid[-1]) == self._n - 1 and (not np.any(abs(self._braid[:-1]) == self._n - 1))
-    
+    def is_destabilization_performable(self, index: int) -> bool:
+        """
+        Helper function to determine if destabilisation move is performable
+        at given index location, at either the top or bottom strand.
+        """
+        
+        valid_index = index<self._braid.shape[0] and index>=0
+        bottom_removable = np.array_equal(
+            np.where(np.abs(self._braid) == self._n - 1),
+            np.array([index]))
+        top_removable = np.array_equal(
+            np.where(np.abs(self._braid) == 1),
+            np.array([index]))
+        return valid_index and (bottom_removable or top_removable)
+
     def is_remove_sigma_inverse_pair_performable(self,index: int) -> bool:
         return self._braid.shape[0] != 0 and (self._braid[index] + self._braid[(index+1)%self._braid.shape[0]] == 0)
     
