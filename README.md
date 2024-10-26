@@ -10,12 +10,20 @@ pip install 'knpy @ git+https://github.com/bbeatrix/knpy'
 ## PR Workflow 
 
 Clone the repo:
-    git clone <repository-url>
+```
+git clone <repository-url>
+```
 Create a new branch:
-    git checkout -b <your-branch-name>
+```
+git checkout -b <your-branch-name>
+```
 Stage and commit changes:
-    git add .
-    git commit -m "Your commit message"
+```
+git add .
+git commit -m "Your commit message"
+```
 Push the branch:
-    git push origin <your-branch-name>
+```
+git push origin <your-branch-name>
+```
 Create a pull request and wait for review.
