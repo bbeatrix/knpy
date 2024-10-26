@@ -163,7 +163,7 @@ class Braid:
             new_sigma = +1
 
         if on_top:
-            braid_stabilized = braid_stabilized+1
+            braid_stabilized = braid_stabilized+braid_stabilized.sign()
             braid_stabilized = np.insert(braid_stabilized, new_sigma, index)
         else:
             new_sigma = new_sigma*self._n
@@ -171,15 +171,17 @@ class Braid:
 
         return Braid(braid_stabilized, copy_sigmas=False)
 
-    def destabilization(self, index: int = None) -> 'Braid':
+    def destabilization(self, index: int) -> 'Braid':
         """
-        Performs destabilization move.
+        Performs destabilization move at given index location, results in
+        a braid with one fewer crossings and one fewer strands.
         """
         if self.is_destabilization_performable() :
-            braid_destabilized = self._braid[:-1].copy()
-
+            on_top = abs(self._braid[index]) == 1
+            braid_destabilized = np.delete(self._braid, [index])
+            if on_top:
+                braid_destabilized -= braid_destabilized.sign()
             return Braid(braid_destabilized, copy_sigmas=False)
-
         else:
             raise IllegalTransformationException
     
@@ -253,7 +255,7 @@ class Braid:
         Helper function to determine if destabilisation move is performable
         at given index location, at either the top or bottom strand.
         """
-        
+
         valid_index = index<self._braid.shape[0] and index>=0
         bottom_removable = np.array_equal(
             np.where(np.abs(self._braid) == self._n - 1),
