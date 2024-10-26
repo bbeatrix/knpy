@@ -34,6 +34,11 @@ class TestBraidClassBraidRelationsInit:
 
 
 class TestBraidClassBraidRelationsStabilizationDestabilization:
+    def test_is_destabilization_performable_negative_index(self) -> None:
+        braid = Braid([-3, 1, -2, -1, -3])
+        for i in range(10):
+            assert not braid.is_destabilization_performable(-i)
+            
     def test_is_destabilization_performable_empty(self) -> None:
         braid = Braid([])
         assert not braid.is_destabilization_performable(0)
@@ -42,23 +47,28 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
     
     def test_is_destabilization_performable_true1(self) -> None:
         braid = Braid([1, -2, 3, 4])
-        assert braid.is_destabilization_performable()
+        assert braid.is_destabilization_performable(0)
+        assert braid.is_destabilization_performable(3)
     
     def test_is_destabilization_performable_true2(self) -> None:
         braid = Braid([1, -2, -3])
-        assert braid.is_destabilization_performable()
-    
+        assert braid.is_destabilization_performable(0)
+        assert braid.is_destabilization_performable(2)
+        
     def test_is_destabilization_performable_false1(self) -> None:
-        braid = Braid([-3, 1, -2, -3])
-        assert not braid.is_destabilization_performable()
+        braid = Braid([-3, 1, -2, -1, -3])
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_is_destabilization_performable_false2(self) -> None:
         braid = Braid([ 1, -2, -3, 1])
-        assert not braid.is_destabilization_performable()
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_is_destabilization_performable_false3(self) -> None:
         braid = Braid([ 1, -2, -3, 1, 4, -4])
-        assert not braid.is_destabilization_performable()
+        for i in range(10):
+            assert not braid.is_destabilization_performable(i)
 
     def test_stabilization_empty(self) -> None:
         braid = Braid([])
