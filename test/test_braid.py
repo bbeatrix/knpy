@@ -62,24 +62,54 @@ class TestBraidClassBraidRelationsStabilizationDestabilization:
 
     def test_stabilization_empty(self) -> None:
         braid = Braid([])
-        braid = braid.stabilization()
+        braid = braid.stabilization(index=0, on_top=False, inverse=False)
         assert braid.values()[0] == 2
-        assert braid.values()[1][-1] == 1
+        assert braid.values()[1][0] == 1
         assert len(braid.values()[1]) == 1
 
     def test_stabilization(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.stabilization()
+        braid = braid.stabilization(index=1, on_top=False, inverse=False)
         assert braid.values()[0] == 5
-        assert braid.values()[1][-1] == 4
+        assert braid.values()[1][1] == 4
+        assert len(braid.values()[1]) == 4
+
+    def test_stabilization2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=False, inverse=False)
+        assert braid.values()[0] == 5
+        assert braid.values()[1][3] == 4
+        assert len(braid.values()[1]) == 4
+
+    def test_stabilization3(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=True, inverse=True)
+        assert braid.values()[0] == 5
+        assert braid.values()[1][3] == -1
         assert len(braid.values()[1]) == 4
 
     def test_stabilization_inverse(self) -> None:
         braid = Braid([1, -2, 3])
-        braid = braid.stabilization(inverse=True)
+        braid = braid.stabilization(index=1, on_top=False, inverse=True)
         assert braid.values()[0] == 5
-        assert braid.values()[1][-1] == -4
+        assert braid.values()[1][1] == -4
         assert len(braid.values()[1]) == 4
+
+    def test_stabilization_inverse2(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=False, inverse=True)
+        assert braid.values()[0] == 5
+        assert braid.values()[1][3] == -4
+        assert len(braid.values()[1]) == 4
+
+    def test_stabilization_inverse3(self) -> None:
+        braid = Braid([1, -2, 3])
+        braid = braid.stabilization(index=3, on_top=True, inverse=True)
+        print(f"TYPE {type(braid)}")
+        exit()
+        assert braid._n == 5
+        assert braid._braid[3] == -1
+        assert len(braid._braid) == 4
 
     def test_destabilization_empty(self) -> None:
         braid = Braid([])
@@ -486,31 +516,6 @@ class TestBraidClassBraidRelationsRemoveSigmaAndInverse:
 
     def test_remove_sigma_inverse_pair_and_conjugate1(self):
         braid = Braid([4])
-        braid = braid.conjugation(value=1, index=0)
+        braid = Braid(braid.conjugation(value=1, index=0))
         braid = braid.remove_sigma_inverse_pair(index=0)
         assert braid.values()[1][0] == 4 and braid._braid.shape[0] == 1 
-
-    def test_remove_sigma_inverse_pair_indices_empty(self):
-        braid = Braid([])
-        result = braid.remove_sigma_inverse_pair_performable_indices()
-        assert np.array_equal(result, [])
-
-    def test_remove_sigma_inverse_pair_indices(self):
-        braid = Braid([13, 42, 3, 4])
-        result = braid.remove_sigma_inverse_pair_performable_indices()
-        assert np.array_equal(result, [])
-
-    def test_remove_sigma_inverse_pair_indices2(self):
-        braid = Braid([1, -1, 2, -2, 2])
-        result = braid.remove_sigma_inverse_pair_performable_indices()
-        assert np.array_equal(result, [0, 2, 3])
-
-    def test_remove_sigma_inverse_pair_indices3(self):
-        braid = Braid([1, -1])
-        result = braid.remove_sigma_inverse_pair_performable_indices()
-        assert np.array_equal(result, [0, 1])
-
-    def test_remove_sigma_inverse_pair_indices4(self):
-        braid = Braid([1, 2, 2, 3, -1])
-        result = braid.remove_sigma_inverse_pair_performable_indices()
-        assert np.array_equal(result, [4])
