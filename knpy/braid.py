@@ -122,9 +122,7 @@ class Braid:
         crossings in the braid (so n = len(braid))
         """
         if self.is_braid_relation1_performable(index):
-            signs = np.ones(
-                3,
-            )
+            signs = np.ones(3)
             if index > 0:
                 index -= len(self._braid)
             signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
