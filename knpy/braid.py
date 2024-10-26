@@ -4,13 +4,8 @@ import torch
 import braidvisualiser as bv
 import warnings
 from functools import partial
-<<<<<<< HEAD
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
-=======
-from data_utils import knots_in_braid_notation_dict
-from exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
->>>>>>> 0918496 (Fix generation of negative examples)
 
 type BraidNotation = np.ndarray
 type BraidTransformation = Callable[[], 'Braid']
