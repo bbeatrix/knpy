@@ -1,6 +1,7 @@
 from functools import partial
 import sys
 import os
+from typing import Callable, List
 import pytest
 import numpy as np
 #IMPORTANT: knpy should be installed first
@@ -537,26 +538,26 @@ class TestBraidPerformableMoves:
 
         performable_moves.append(braid.destabilization)
         
-        conjugation_values = list(range(-braid._n+1,0)) + list(range(1,braid._n))
-        conjugation_indices = (range(0, braid._braid.shape[0] + 2))
-        conjugation_performable_moves = []
+        conjugation_values = list(range(-braid.strand_count+1,0)) + list(range(1,braid.strand_count))
+        conjugation_indices = (range(0, len(braid) + 2))
+        conjugation_performable_moves: List[Callable[[], Braid]] = []
         for v in conjugation_values:
             for i in conjugation_indices:
                 conjugation_performable_moves = conjugation_performable_moves + [partial(braid.conjugation,value=v,index=i)]
 
-        performable_moves = performable_moves + conjugation_performable_moves
+        performable_moves += conjugation_performable_moves
 
-        braid_relation1_performable_moves = [partial(braid.braid_relation1,index=i) for i in range(len(braid.values()[1]))]
+        braid_relation1_performable_moves = [partial(braid.braid_relation1,index=i) for i in range(len(braid))]
 
-        performable_moves = performable_moves + braid_relation1_performable_moves
+        performable_moves += braid_relation1_performable_moves
 
-        braid_relation2_performable_moves = [partial(braid.braid_relation2,index=i) for i in range(len(braid.values()[1]))]
+        braid_relation2_performable_moves = [partial(braid.braid_relation2,index=i) for i in range(len(braid))]
 
-        performable_moves = performable_moves + braid_relation2_performable_moves
+        performable_moves += braid_relation2_performable_moves
 
-        braid_remove_sigma_inverse_pair_moves = [partial(braid.remove_sigma_inverse_pair,index=i) for i in range(len(braid.values()[1]))]
+        braid_remove_sigma_inverse_pair_moves = [partial(braid.remove_sigma_inverse_pair,index=i) for i in range(len(braid))]
 
-        performable_moves = performable_moves + braid_remove_sigma_inverse_pair_moves
+        performable_moves += braid_remove_sigma_inverse_pair_moves
         return performable_moves
     
     @pytest.mark.parametrize("sigmas", [[1,2,3,4,5], [-2, 4, 8, -5, 3, 1, 2]])
@@ -569,14 +570,18 @@ class TestBraidPerformableMoves:
             states.append(move())
 
         all_moves = self.get_all_moves(braid)
-        
+
+        all_states = []       
         for move in all_moves:
             try:
                 state = move()
             except IllegalTransformationException as e:
                 pass
             else:
-                assert state in states
+                all_states.append(state)
+        assert len(states) == len(all_states)
+        for state in states:
+            assert state in all_states
     @pytest.mark.parametrize("low, high, size", [[0, 1, 10], [-5,5,1], [-1, 1, 10], [-5, 5, 15]])
     def test_performable_moves_random(self, low, high, size):
         rng = np.random.default_rng(42)
