@@ -11,6 +11,7 @@ from . import braid_cpp_impl as B
 type BraidNotation = np.ndarray
 type BraidTransformation = Callable[[], "Braid"]
 
+
 def braid_move(fun: Callable):
     """
     Decorator that transforms C++ exceptions into ``IllegalTransformationException``
@@ -22,10 +23,12 @@ def braid_move(fun: Callable):
             return fun(*args, **kwargs)
         except B.IllegalTransformationException as e:
             raise IllegalTransformationException(e) from e
-    
+
     return wrapped
 
+
 class Braid:
+
     def __init__(self, sigmas: np.ndarray | list[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
@@ -59,6 +62,18 @@ class Braid:
             self._n = 1
         else:
             self._n = np.max(np.abs(self._braid)) + 1
+
+    @classmethod
+    def _from_array_directly(cls, inp: np.ndarray):
+        # Do not do this at home!
+        # Only doing this in the hopes of faster runtime
+        obj = cls.__new__(cls)
+        obj._braid = inp
+        if inp.size == 0:
+            obj._n = 1
+        else:
+            obj._n = np.max(np.abs(inp)) + 1
+        return obj
 
     def values(self) -> tuple[int, BraidNotation]:
         """
@@ -100,13 +115,13 @@ class Braid:
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         if amount < 0:
-            raise IndexOutOfRangeException(f'Amount ({amount}) should be positive.')
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
         if amount >= len(self):
             if len(self) == 0:
-                raise IllegalTransformationException('Cannot shift empty braid.')
-            raise IndexOutOfRangeException(f'Amount ({amount}) should be less than the length.')
+                raise IllegalTransformationException("Cannot shift empty braid.")
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
         shifted = B.shift_left(self._braid, amount)
-        return Braid(shifted, copy_sigmas=False)
+        return Braid._from_array_directly(shifted)
 
     @braid_move
     def shift_right(self, amount: int = 1) -> "Braid":
@@ -115,13 +130,13 @@ class Braid:
         amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
         """
         if amount < 0:
-            raise IndexOutOfRangeException(f'Amount ({amount}) should be positive.')
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
         if amount >= len(self):
             if len(self) == 0:
-                raise IllegalTransformationException('Cannot shift empty braid.')
-            raise IndexOutOfRangeException(f'Amount ({amount}) should be less than the length.')
+                raise IllegalTransformationException("Cannot shift empty braid.")
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
         shifted = B.shift_right(self._braid, amount)
-        return Braid(shifted, copy_sigmas=False)
+        return Braid._from_array_directly(shifted)
 
     # Braid relations
     @braid_move
@@ -141,7 +156,7 @@ class Braid:
         crossings in the braid (so n = len(braid))
         """
         transformed = B.braid_relation1(self._braid, index)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     @braid_move
     def braid_relation2(self, index: int) -> "Braid":
@@ -158,7 +173,7 @@ class Braid:
             number of crossings in the braid (so n = len(braid))
         """
         transformed = B.braid_relation2(self._braid, index)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     # Markov moves
     @braid_move
@@ -186,7 +201,7 @@ class Braid:
         ```
         """
         transformed = B.conjugation(self._braid, value, index)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     @braid_move
     def stabilization(self, index: int, on_top=False, inverse: bool = False) -> "Braid":
@@ -196,7 +211,7 @@ class Braid:
         braid generator.
         """
         transformed = B.stabilization(self._braid, index, on_top, inverse)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     @braid_move
     def destabilization(self, index: int) -> "Braid":
@@ -205,7 +220,7 @@ class Braid:
         a braid with one fewer crossings and one fewer strands.
         """
         transformed = B.destabilization(self._braid, index)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     @braid_move
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
@@ -216,7 +231,7 @@ class Braid:
             range [-k, k) where k is the number of crossings (so `len(braid)`).
         """
         transformed = B.remove_sigma_inverse_pair(self._braid, index)
-        return Braid(transformed, copy_sigmas=False)
+        return Braid._from_array_directly(transformed)
 
     # Chech whether a move is performable or not
     def is_braid_relation1_performable(self, index: int) -> bool:
