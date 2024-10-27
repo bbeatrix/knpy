@@ -2,7 +2,7 @@ from typing import Callable
 import numpy as np
 import torch
 import braidvisualiser as bv
-from functools import partial
+from functools import partial, wraps
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
@@ -11,6 +11,19 @@ import braid_cpp_impl as B
 type BraidNotation = np.ndarray
 type BraidTransformation = Callable[[], "Braid"]
 
+def braid_move(fun: Callable):
+    """
+    Decorator that transforms C++ exceptions into ``IllegalTransformationException``
+    """
+
+    @wraps(fun)
+    def wrapped(*args, **kwargs):
+        try:
+            fun(*args, **kwargs)
+        except B.IllegalTransformationException as e:
+            raise IllegalTransformationException(e) from e
+    
+    return wrapped
 
 class Braid:
     def __init__(self, sigmas: np.ndarray | list[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
@@ -78,6 +91,7 @@ class Braid:
 
     # Action functions from paper https://arxiv.org/pdf/2010.16263
 
+    @braid_move
     def shift_left(self, amount: int = 1) -> "Braid":
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it
@@ -88,6 +102,7 @@ class Braid:
         shifted = B.shift_left(self._braid, amount)
         return Braid(shifted)
 
+    @braid_move
     def shift_right(self, amount: int = 1) -> "Braid":
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
@@ -97,6 +112,7 @@ class Braid:
         return Braid(shifted)
 
     # Braid relations
+    @braid_move
     def braid_relation1(self, index: int) -> "Braid":
         """
         Perform first braid relation.
@@ -115,6 +131,7 @@ class Braid:
         transformed = B.braid_relation1(self._braid, index)
         return Braid(transformed)
 
+    @braid_move
     def braid_relation2(self, index: int) -> "Braid":
         """
         Perform second braid relation.
@@ -132,6 +149,7 @@ class Braid:
         return Braid(transformed)
 
     # Markov moves
+    @braid_move
     def conjugation(self, value: int, index: int) -> "Braid":
         """
         Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the
@@ -158,6 +176,7 @@ class Braid:
         transformed = B.conjugation(self._braid, value, index)
         return Braid(transformed)
 
+    @braid_move
     def stabilization(self, index: int, on_top=False, inverse: bool = False) -> "Braid":
         """
         Performs stabilization move before specified crossing index, either
@@ -167,6 +186,7 @@ class Braid:
         transformed = B.stabilization(self._braid, index, on_top, inverse)
         return Braid(transformed)
 
+    @braid_move
     def destabilization(self, index: int) -> "Braid":
         """
         Performs destabilization move at given index location, results in
@@ -175,6 +195,7 @@ class Braid:
         transformed = B.destabilization(self._braid, index)
         return Braid(transformed)
 
+    @braid_move
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
         """
         Remove consequtive inverse on a given place (last and first element are consequtive)
