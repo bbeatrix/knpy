@@ -24,9 +24,21 @@ def gen_eq_braid(braid: Braid, depth: int) -> Braid:
     for i in tqdm.tqdm(range(depth)):
         mv = gen_random_move(braid)
         braid = mv()
-        for j in range(10): braid = gen_random_relation2(braid)()
+        for j in range(100): braid = gen_random_relation2(braid)()
     for j in range(100): braid = gen_random_collapse(braid)()
     return braid
+
+def convert_to_csv(braids):
+    csv_lines = ["Name,Braid Notation"]
+    
+    for i, b in enumerate(braids):
+        array_str = '{' + ';'.join(map(str, b.notation())) + '}'
+        csv_lines.append(f"{i}_{len(b)},{array_str}")
+    
+    csv_output = '\n'.join(csv_lines)
+    f = open("braids.csv", "w")
+    f.write(csv_output)
+    f.close()
 
 def minimal_crossing(starting_braid: Braid, execution_time: int = 200000):
     pq = []
@@ -75,12 +87,7 @@ def minimal_crossing(starting_braid: Braid, execution_time: int = 200000):
     return best
 
 braid = Braid("11n_16")
-print("Answer:", len(braid))
-#braid.show()
-braid = gen_eq_braid(braid, 300)
-braid.show()
-#braid.show()
-print("Start:", len(braid))
-best = minimal_crossing(braid)
-#best.show()
-print("Result:", len(best))
+braids = []
+for i in range(10):
+    braids.append(gen_eq_braid(braid, 100))
+convert_to_csv(braids)
