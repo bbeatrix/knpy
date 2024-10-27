@@ -1,7 +1,10 @@
+#include <stdexcept>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using array = py::array_t<int>
+
+struct IllegalTransformationException : public std::runtime_error {};
 
 int strand_count(array inp) {
     int mx = 0;
@@ -103,8 +106,11 @@ array stabilization(array inp, int index, bool on_top = false, bool inverse = fa
     return res;
 }
 
-PYBIND11_MODULE(braids, m) {
-    m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    m.def("add", &add, "A function that adds two numbers");
+PYBIND11_MODULE(braid_cpp_impl, m) {
+    m.doc() = "Braid C++ implementation";
+    py::register_exception<IllegalTransformationException>(
+        m, "IllegalTransformationException");
+
+    m.def("shift_left", &shift_left, "Shift left implementation");
 }
