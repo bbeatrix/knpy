@@ -217,4 +217,11 @@ PYBIND11_MODULE(braid_cpp_impl, m) {
         m, "IllegalTransformationException");
 
     m.def("shift_left", &shift_left, "Shift left implementation");
+    m.def("shift_right", &shift_right, "Shift right implementation");
+    m.def("braid_relation1", &braid_relation1, "Braid relation #1 implementation");
+    m.def("braid_relation2", &braid_relation2, "Braid relation #2 implementation");
+    m.def("conjugation", &conjugation, "Conjugation implementation");
+    m.def("stabilization", &stabilization, "Stabilization implementation");
+    m.def("destabilization", &destabilization, "Destabilization implementation");
+    m.def("remove_sigma_inverse_pair", &remove_sigma_inverse_pair, "Remove sigma inverse pair implementation");
 }

@@ -465,16 +465,25 @@ class TestBraidClassBraidRelationsShifts:
     def test_shift_right(self) -> None:
         braid = Braid([1, 2, 3, 4, 5])
 
-        for i in range(-4, 5):
-            assert braid.shift_right(i) == braid.shift_left(-i)
+        assert braid.shift_right() == Braid([5, 1, 2, 3, 4])
 
-        with pytest.raises(IllegalTransformationException):
+        assert braid.shift_right(0) == braid
+        assert braid.shift_right(1) == Braid([5, 1, 2, 3, 4])
+        assert braid.shift_right(2) == Braid([4, 5, 1, 2, 3])
+        assert braid.shift_right(3) == Braid([3, 4, 5, 1, 2])
+        assert braid.shift_right(4) == Braid([2, 3, 4, 5, 1])
+
+        # No negative indices are supported
+        # for i in range(-4, 5):
+        #     assert braid.shift_right(i) == braid.shift_left(-i)
+
+        with pytest.raises(IndexOutOfRangeException):
             braid.shift_right(5)
 
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(IndexOutOfRangeException):
             braid.shift_right(-5)
 
-        with pytest.raises(IllegalTransformationException):
+        with pytest.raises(IndexOutOfRangeException):
             braid.shift_right(9999)
 
     def test_shift_left_multiple_same(self) -> None:

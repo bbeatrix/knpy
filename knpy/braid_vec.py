@@ -117,6 +117,8 @@ class Braid:
         if amount < 0:
             raise IndexOutOfRangeException(f'Amount ({amount}) should be positive.')
         if amount >= len(self):
+            if len(self) == 0:
+                raise IllegalTransformationException('Cannot shift empty braid.')
             raise IndexOutOfRangeException(f'Amount ({amount}) should be less than the length.')
         shifted = B.shift_right(self._braid, amount)
         return Braid(shifted)
