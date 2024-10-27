@@ -6,7 +6,7 @@ from functools import partial, wraps
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
-import braid_cpp_impl as B
+from . import braid_cpp_impl as B
 
 type BraidNotation = np.ndarray
 type BraidTransformation = Callable[[], "Braid"]
@@ -106,7 +106,7 @@ class Braid:
                 raise IllegalTransformationException('Cannot shift empty braid.')
             raise IndexOutOfRangeException(f'Amount ({amount}) should be less than the length.')
         shifted = B.shift_left(self._braid, amount)
-        return Braid(shifted)
+        return Braid(shifted, copy_sigmas=False)
 
     @braid_move
     def shift_right(self, amount: int = 1) -> "Braid":
@@ -121,7 +121,7 @@ class Braid:
                 raise IllegalTransformationException('Cannot shift empty braid.')
             raise IndexOutOfRangeException(f'Amount ({amount}) should be less than the length.')
         shifted = B.shift_right(self._braid, amount)
-        return Braid(shifted)
+        return Braid(shifted, copy_sigmas=False)
 
     # Braid relations
     @braid_move
@@ -141,7 +141,7 @@ class Braid:
         crossings in the braid (so n = len(braid))
         """
         transformed = B.braid_relation1(self._braid, index)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     @braid_move
     def braid_relation2(self, index: int) -> "Braid":
@@ -158,7 +158,7 @@ class Braid:
             number of crossings in the braid (so n = len(braid))
         """
         transformed = B.braid_relation2(self._braid, index)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     # Markov moves
     @braid_move
@@ -186,7 +186,7 @@ class Braid:
         ```
         """
         transformed = B.conjugation(self._braid, value, index)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     @braid_move
     def stabilization(self, index: int, on_top=False, inverse: bool = False) -> "Braid":
@@ -196,7 +196,7 @@ class Braid:
         braid generator.
         """
         transformed = B.stabilization(self._braid, index, on_top, inverse)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     @braid_move
     def destabilization(self, index: int) -> "Braid":
@@ -205,7 +205,7 @@ class Braid:
         a braid with one fewer crossings and one fewer strands.
         """
         transformed = B.destabilization(self._braid, index)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     @braid_move
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
@@ -216,7 +216,7 @@ class Braid:
             range [-k, k) where k is the number of crossings (so `len(braid)`).
         """
         transformed = B.remove_sigma_inverse_pair(self._braid, index)
-        return Braid(transformed)
+        return Braid(transformed, copy_sigmas=False)
 
     # Chech whether a move is performable or not
     def is_braid_relation1_performable(self, index: int) -> bool:
@@ -235,7 +235,7 @@ class Braid:
 
         returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
-        return B.braid_relation1_performable_indices(self._braid)
+        return np.nonzero(B.braid_relation1_performable_indices(self._braid))[0]
 
     def is_braid_relation2_performable(self, index: int) -> bool:
         if index >= len(self._braid):
@@ -301,7 +301,31 @@ class Braid:
         return len(self) != 0 and (self._braid[index] + self._braid[(index + 1) % len(self)] == 0)
 
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
-        return B.remove_sigma_inverse_pair_performable_indices(self._braid)
+        return np.nonzero(B.remove_sigma_inverse_pair_performable_indices(self._braid))[0]
+    
+
+    def performable_rel2(self) -> list[BraidTransformation]:
+        braid_relation2_indices = self.braid_relation2_performable_indices()
+        braid_relation2_performable_moves: list[BraidTransformation] = [
+            partial(self.braid_relation2, index=i) for i in braid_relation2_indices
+        ]
+        return braid_relation2_performable_moves
+
+    def performable_collapse(self) -> list[BraidTransformation]:
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
+
+        for i in range(0, len(self)):
+            if self.is_destabilization_performable(i):
+                performable_moves.extend([partial(self.destabilization, i)])
+
+        braid_remove_sigma_inverse_pairs = self.remove_sigma_inverse_pair_performable_indices()
+        braid_remove_sigma_inverse_pair_moves: list[BraidTransformation] = [
+            partial(self.remove_sigma_inverse_pair, index=i) for i in braid_remove_sigma_inverse_pairs
+        ]
+
+        performable_moves += braid_remove_sigma_inverse_pair_moves
+
+        return performable_moves
 
     def performable_moves(self) -> list[BraidTransformation]:
         """
@@ -310,7 +334,7 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = []
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
 
         for i in range(0, len(self)):
             if self.is_destabilization_performable(i):
@@ -326,7 +350,7 @@ class Braid:
         conjugation_indices = range(0, len(self) + 2)
         conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
-            for i in conjugation_indices:
+            for i in [0]:
                 if self.is_conjugation_performable(v, i):
                     conjugation_performable_moves = conjugation_performable_moves + [
                         partial(self.conjugation, value=v, index=i)
@@ -364,3 +388,6 @@ class Braid:
 
     def __len__(self) -> int:
         return len(self._braid)
+
+    def __lt__(self, other):
+         return self.strand_count < other.strand_count
