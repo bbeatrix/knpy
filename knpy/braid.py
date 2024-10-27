@@ -24,7 +24,7 @@ class Braid:
         """
         self._braid: BraidNotation
         if isinstance(sigmas, str):
-            self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index])
+            self._braid = np.array(knots_in_braid_notation_dict[sigmas][notation_index], dtype=np.int32)
         elif isinstance(sigmas, np.ndarray):
             if copy_sigmas:
                 self._braid = sigmas.copy()
@@ -35,7 +35,7 @@ class Braid:
                 raise InvalidBraidException(
                     f"Unable to create braid from {type(sigmas)}, an element is not instance of int or np.integer"
                 )
-            self._braid = np.array(sigmas)
+            self._braid = np.array(sigmas, dtype=np.int32)
 
         if np.any(self._braid == 0):
             raise InvalidBraidException
