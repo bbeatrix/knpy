@@ -48,7 +48,7 @@ def minimal_crossing(starting_braid: Braid, execution_time: int = 200000):
     best = starting_braid
 
     def get_fingerprint(braid: Braid):
-        return tuple(braid.notation())
+        return tuple(braid.notation(False))
 
     def add_node(braid: Braid, new_depth: int):
         fingerprint = get_fingerprint(braid)
@@ -67,7 +67,7 @@ def minimal_crossing(starting_braid: Braid, execution_time: int = 200000):
                 pq = pq[:100]
                 now = get_time()
                 pbar.update(now - last_time)
-                pbar.set_description(f"c = {len(best)}; s = {best.strand_count}")
+                pbar.set_description(f"c = {len(best)}; s = {best.strand_count}; it/s = {1000 * it / (now - start_time)}")
                 last_time = now
                 if now - start_time > execution_time:
                     break
@@ -88,6 +88,7 @@ def minimal_crossing(starting_braid: Braid, execution_time: int = 200000):
 
 braid = Braid("11n_16")
 braids = []
-for i in range(10):
+for i in range(1):
     braids.append(gen_eq_braid(braid, 100))
 convert_to_csv(braids)
+minimal_crossing(braids[0])
