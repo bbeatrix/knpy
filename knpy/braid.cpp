@@ -7,13 +7,15 @@
 namespace py = pybind11;
 using array = py::array_t<long long>;
 
-struct IllegalTransformationException : public std::runtime_error {};
+struct IllegalTransformationException : public std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
 
 int strand_count(array _inp) {
     auto inp = _inp.unchecked<1>();
     long long mx = 0;
     for (int i = 0; i < inp.size(); i++) {
-        mx = std::max(mx, inp[i]);
+        mx = std::max(mx, abs(inp[i]));
     }
     return mx + 1;
 }
@@ -56,25 +58,33 @@ bool is_braid_relation1_performable(array _inp, int index) {
         && !(sign(b) != sign(a) && sign(b) != sign(c));
 }
 
+array braid_relation1_performable_indices(array _inp) {
+    auto inp = _inp.unchecked<1>();
+    int n = inp.size();
+    array _res(n);
+    auto res = _res.mutable_unchecked();
+    for (int i = 0; i < n; i++) res[i] = is_braid_relation1_performable(_inp, i);
+    return _res;
+}
+
 array braid_relation1(array _inp, int index) {
     auto inp = _inp.unchecked<1>();
     int n = inp.size();
     if (is_braid_relation1_performable(_inp, index)) {
-        int signs[3] = {0, 0, 0};
+        int signs[3] = {1, 1, 1};
         array _res(n);
         auto res = _res.mutable_unchecked();
         for (int i = 0; i < n; i++) res[i] = inp[i];
         for (int i = 0; i < 3; i++) {
-            // TODO % optimisation
             if (inp[(index+i)%n] < 0) signs[i] = -1;
         }
         for (int i = 0; i < 3; i++) {
-            int j = (index+i+(i!=1))%n;
+            int j = (index+(i!=1))%n;
             res[(index+i)%n] = signs[2-i] * abs(inp[j]); 
         }
         return _res;
     } else {
-        throw 1;
+        throw IllegalTransformationException("Illegal transformation");
     }
 }
 
@@ -95,37 +105,29 @@ array braid_relation2(array _inp, int index) {
         std::swap(res[index], res[(index+1)%n]);
         return _res;
     } else {
-        throw 1;
+        throw IllegalTransformationException("Illegal transformation");
     }
-}
-
-bool is_conjugation_performable(array _inp, int value, int index) {
-    return true;
 }
 
 array conjugation(array _inp, int value, int index) {
     auto inp = _inp.unchecked<1>();
     int n = inp.size();
-    if (is_conjugation_performable(_inp, value, index)) {
-        array _res(n+2);
-        auto res = _res.mutable_unchecked();
-        if (index == n + 1) {
-            res[0] = -value;
-            res[n+1] = value;
-            for (int i = 0; i < n; i++) {
-                res[i+1] = inp[i];
-            }
-        } else {
-            res[index] = -value;
-            res[index+1] = value;
-            for (int i = 0; i < n; i++) {
-                res[i + 2*(i>=index)] = inp[i];
-            }
+    array _res(n+2);
+    auto res = _res.mutable_unchecked();
+    if (index == n + 1) {
+        res[0] = -value;
+        res[n+1] = value;
+        for (int i = 0; i < n; i++) {
+            res[i+1] = inp[i];
         }
-        return _res;
     } else {
-        throw 1;
+        res[index] = value;
+        res[index+1] = -value;
+        for (int i = 0; i < n; i++) {
+            res[i + 2*(i>=index)] = inp[i];
+        }
     }
+    return _res;
 }
 
 array stabilization(array _inp, int index, bool on_top = false, bool inverse = false) {
@@ -153,7 +155,7 @@ array stabilization(array _inp, int index, bool on_top = false, bool inverse = f
 bool is_destabilization_performable(array _inp, int index) {
     auto inp = _inp.unchecked<1>();
     int n = inp.size();
-    bool valid_index = 0 <= index < n;
+    bool valid_index = 0 <= index && index < n;
     bool ok1 = false, ok2 = true, ok3 = false, ok4 = true;
     int cnt = strand_count(_inp) - 1;
     for (int i = 0; i < n; i++) {
@@ -162,6 +164,7 @@ bool is_destabilization_performable(array _inp, int index) {
             else ok2 = false;
         }
     }
+
     for (int i = 0; i < n; i++) {
         if (abs(inp[i]) == 1) {
             if (i == index) ok3 = true;
@@ -184,7 +187,7 @@ array destabilization(array _inp, int index) {
         }
         return _res;
     } else {
-        throw 1;
+        throw IllegalTransformationException("Illegal transformation");
     }
 }
 
@@ -195,18 +198,30 @@ bool is_remove_sigma_inverse_pair_performable(array _inp, int index) {
     return n != 0 && inp[index] == -inp[j];
 }
 
+array remove_sigma_inverse_pair_performable_indices(array _inp) {
+    auto inp = _inp.unchecked<1>();
+    int n = inp.size();
+    array _res(n);
+    auto res = _res.mutable_unchecked();
+    for (int i = 0; i < n; i++) res[i] = is_remove_sigma_inverse_pair_performable(_inp, i);
+    return _res;
+}
+
 array remove_sigma_inverse_pair(array _inp, int index) {
     auto inp = _inp.unchecked<1>();
     int n = inp.size();
     if (is_remove_sigma_inverse_pair_performable(_inp, index)) {
         array _res(n-2);
         auto res = _res.mutable_unchecked();
-        for (int i = 0; i < n-2; i++) {
-            res[i] = inp[i + 2 * (i>=index)];
+        int cnt = 0;
+        for (int i = 0; i < n; i++) {
+            if (i != index && i != (index+1)%n) {
+                res[cnt++] = inp[i];
+            }
         }
         return _res;
     } else {
-        throw 1;
+        throw IllegalTransformationException("Illegal transformation");
     }
 }
 
@@ -218,10 +233,14 @@ PYBIND11_MODULE(braid_cpp_impl, m) {
 
     m.def("shift_left", &shift_left, "Shift left implementation");
     m.def("shift_right", &shift_right, "Shift right implementation");
+    m.def("is_braid_relation1_performable", &is_braid_relation1_performable, "Is braid relation #1 performable implementation");
+    m.def("braid_relation1_performable_indices", &braid_relation1_performable_indices, "Braid relation #1 performable indices implementation");
     m.def("braid_relation1", &braid_relation1, "Braid relation #1 implementation");
+    m.def("is_braid_relation2_performable", &is_braid_relation2_performable, "Is braid relation #2 performable implementation");
     m.def("braid_relation2", &braid_relation2, "Braid relation #2 implementation");
     m.def("conjugation", &conjugation, "Conjugation implementation");
     m.def("stabilization", &stabilization, "Stabilization implementation");
     m.def("destabilization", &destabilization, "Destabilization implementation");
+    m.def("remove_sigma_inverse_pair_performable_indices", &remove_sigma_inverse_pair_performable_indices, "Remove sigma inverse pair performable indices implementation");
     m.def("remove_sigma_inverse_pair", &remove_sigma_inverse_pair, "Remove sigma inverse pair implementation");
 }
