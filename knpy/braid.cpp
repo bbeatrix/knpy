@@ -151,7 +151,7 @@ array stabilization(array _inp, int index, bool on_top = false, bool inverse = f
     }
     return _res;
 }
-#include <iostream>
+
 bool is_destabilization_performable(array _inp, int index) {
     auto inp = _inp.unchecked<1>();
     int n = inp.size();
