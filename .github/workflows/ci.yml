@@ -16,7 +16,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build C++ implementations
-      - run: |
+        run: |
           mkdir knpy/build
           cd knpy/build
           cmake ..
