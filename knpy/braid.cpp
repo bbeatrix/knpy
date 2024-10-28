@@ -197,7 +197,7 @@ bool is_remove_sigma_inverse_pair_performable(const array _inp, const int index)
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
     const int j = (index+1)%n;
-    return n != 0 && 0 <= index && index <= n && inp[index] == -inp[j];
+    return n != 0 && 0 <= index && index < n && inp[index] == -inp[j];
 }
 
 array remove_sigma_inverse_pair_performable_indices(const array _inp) {
