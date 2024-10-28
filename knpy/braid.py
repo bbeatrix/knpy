@@ -243,7 +243,7 @@ class Braid:
                 braid_destabilized -= np.sign(braid_destabilized)
             return Braid(braid_destabilized, copy_sigmas=False)
         else:
-            raise IllegalTransformationException("Destabilization is not performable")
+            raise IllegalTransformationException(f"Destabilization is not performable at index {index}")
 
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
         """

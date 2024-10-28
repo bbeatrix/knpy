@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <string>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <algorithm>
@@ -63,7 +64,7 @@ array braid_relation1(const array _inp, const int index) {
     const int n = inp.size();
 
     if (!is_braid_relation1_performable(_inp, index)) {
-        throw IllegalTransformationException("Illegal transformation");
+        throw IllegalTransformationException("Braid relation 1 is not performable at index " + std::to_string(index));
     }
 
     int signs[3] = {1, 1, 1};
@@ -100,7 +101,7 @@ array braid_relation2(const array _inp, const int index) {
     const int n = inp.size();
     
     if (!is_braid_relation2_performable(_inp, index)) {
-        throw IllegalTransformationException("Illegal transformation");
+        throw IllegalTransformationException("Braid relation 2 is not performable at index " + std::to_string(index));
     }
 
     array _res(n);
@@ -179,7 +180,7 @@ array destabilization(const array _inp, const int index, const int strand_count)
     const int n = inp.size();
 
     if (!is_destabilization_performable(_inp, index, strand_count)) {
-        throw IllegalTransformationException("Illegal transformation");
+        throw IllegalTransformationException("Destabilization is not performable at index " + std::to_string(index));
     }
 
     const bool on_top = abs(inp[index]) == 1;
@@ -213,7 +214,7 @@ array remove_sigma_inverse_pair(const array _inp, const int index) {
     const int n = inp.size();
 
     if (!is_remove_sigma_inverse_pair_performable(_inp, index)) {
-        throw IllegalTransformationException("Illegal transformation");
+        throw IllegalTransformationException("Sigma inverse pair is not removable at index " + std::to_string(index));
     }
 
     array _res(n-2);
