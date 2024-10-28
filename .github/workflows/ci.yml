@@ -46,6 +46,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pylint pylint-pytest
+      - name: Download built braid_cpp_impl module
+        uses: actions/download-artifact@v4
+        with:
+          pattern: braid_cpp_impl.*
+          path: knpy/
       - name: Lint with Pylint 
         run: |
           (cd knpy && pylint -v --disable fixme *.py)
@@ -63,6 +68,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+      - name: Download built braid_cpp_impl module
+        uses: actions/download-artifact@v4
+        with:
+          pattern: braid_cpp_impl.*
+          path: knpy/
       - name: Test with pytest
         run: |
           PYTHONPATH=. pytest -v tests
