@@ -1,3 +1,4 @@
+# pylint: disable=R0801
 from typing import Callable
 import numpy as np
 import torch
