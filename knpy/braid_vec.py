@@ -23,7 +23,7 @@ def braid_move(fun: Callable):
         try:
             return fun(*args, **kwargs)
         except B.IllegalTransformationException as e:
-            raise IllegalTransformationException(e) from e
+            raise IllegalTransformationException(str(e.args[0])) from e
 
     return wrapped
 
