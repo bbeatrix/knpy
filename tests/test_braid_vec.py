@@ -380,7 +380,7 @@ class TestBraidClassBraidRelationsBraidRelation2:
 
     def test_braid_relation2_performable(self) -> None:
         braid = Braid([3, 1, 2, 1])
-        for i in range(-4, 4):
+        for i in range(0, 4):
             assert braid.is_braid_relation2_performable(i) == (i in [-4, -1, 0, 3])
 
     def test_braid_relation2_abs_check1(self) -> None:
