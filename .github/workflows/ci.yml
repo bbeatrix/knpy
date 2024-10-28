@@ -73,7 +73,7 @@ jobs:
         with:
           pattern: '*braid_cpp_impl*'
           path: knpy/
-      - name: DEBUG: Verify that artifacts have been downloaded
+      - name: 'DEBUG: Verify that artifacts have been downloaded'
         run: |
           pwd
           ls -lah knpy
