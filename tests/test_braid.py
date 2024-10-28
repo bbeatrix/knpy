@@ -3,8 +3,7 @@ import pytest
 import numpy as np
 
 # IMPORTANT: knpy should be installed first
-from knpy import Braid
-from knpy.braid import BraidTransformation
+from knpy.braid import Braid, BraidTransformation
 from knpy import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
 
