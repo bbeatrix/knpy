@@ -155,21 +155,21 @@ bool is_destabilization_performable(const array _inp, const int index, const int
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
     const bool valid_index = 0 <= index && index < n;
-    bool ok1 = false, ok2 = true, ok3 = false, ok4 = true;
+    bool ok_bottom_position = false, ok_bottom_elsewhere = true, ok_top_position = false, ok_top_elsewhere = true;
     for (int i = 0; i < n; i++) {
         if (abs(inp[i]) == strand_count - 1) {
-            if (i == index) ok1 = true;
-            else ok2 = false;
+            if (i == index) ok_bottom_position = true;
+            else ok_bottom_elsewhere = false;
         }
     }
 
     for (int i = 0; i < n; i++) {
         if (abs(inp[i]) == 1) {
-            if (i == index) ok3 = true;
-            else ok4 = false;
+            if (i == index) ok_top_position = true;
+            else ok_top_elsewhere = false;
         }
     }
-    return valid_index && ((ok1 && ok2) || (ok3 && ok4));
+    return valid_index && ((ok_bottom_position && ok_bottom_elsewhere) || (ok_top_position && ok_top_elsewhere));
 }
 
 array destabilization(const array _inp, const int index, const int strand_count) {
