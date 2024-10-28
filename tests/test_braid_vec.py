@@ -12,18 +12,21 @@ class TestBraidClassBraidRelationsInit:
     def test_init_empty(self) -> None:
         braid = Braid([])
         assert braid.strand_count == 1
-        assert braid.notation().shape[0] == 0
+        assert braid.notation(False).shape[0] == 0
+        assert braid.notation(False).dtype == np.int32
 
     def test_init(self) -> None:
         braid = Braid([1, 2, 3])
         assert braid.strand_count == 4
-        assert braid.notation().shape[0] == 3
+        assert braid.notation(False).shape[0] == 3
+        assert braid.notation(False).dtype == np.int32
 
     def test_init_from_database(self) -> None:
         braid = Braid("3_1")
         assert braid.strand_count == 2
-        assert braid.notation().shape[0] == 3
-        assert np.all(braid.notation() == np.array([1, 1, 1]))
+        assert braid.notation(False).shape[0] == 3
+        assert np.all(braid.notation(False) == np.array([1, 1, 1]))
+        assert braid.notation(False).dtype == np.int32
 
     def test_values(self) -> None:
         braid = Braid([1, 2, 3])
