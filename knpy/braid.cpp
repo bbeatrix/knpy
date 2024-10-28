@@ -230,8 +230,7 @@ array remove_sigma_inverse_pair(const array _inp, const int index) {
 
 PYBIND11_MODULE(braid_cpp_impl, m) {
     m.doc() = "Braid C++ implementation";
-    py::register_exception<IllegalTransformationException>(
-        m, "IllegalTransformationException");
+    py::register_exception<IllegalTransformationException>(m, "IllegalTransformationException");
 
     m.def("shift_left", &shift_left, "Shift left implementation");
     m.def("shift_right", &shift_right, "Shift right implementation");
