@@ -61,22 +61,23 @@ array braid_relation1_performable_indices(const array _inp) {
 array braid_relation1(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    if (is_braid_relation1_performable(_inp, index)) {
-        int signs[3] = {1, 1, 1};
-        array _res(n);
-        auto res = _res.mutable_unchecked<1>();
-        for (int i = 0; i < n; i++) res[i] = inp[i];
-        for (int i = 0; i < 3; i++) {
-            if (inp[(index+i)%n] < 0) signs[i] = -1;
-        }
-        for (int i = 0; i < 3; i++) {
-            const int j = (index+(i!=1))%n;
-            res[(index+i)%n] = signs[2-i] * abs(inp[j]); 
-        }
-        return _res;
-    } else {
+
+    if (!is_braid_relation1_performable(_inp, index)) {
         throw IllegalTransformationException("Illegal transformation");
     }
+
+    int signs[3] = {1, 1, 1};
+    array _res(n);
+    auto res = _res.mutable_unchecked<1>();
+    for (int i = 0; i < n; i++) res[i] = inp[i];
+    for (int i = 0; i < 3; i++) {
+        if (inp[(index+i)%n] < 0) signs[i] = -1;
+    }
+    for (int i = 0; i < 3; i++) {
+        const int j = (index+(i!=1))%n;
+        res[(index+i)%n] = signs[2-i] * abs(inp[j]); 
+    }
+    return _res;
 }
 
 bool is_braid_relation2_performable(const array _inp, const int index) {
@@ -97,15 +98,16 @@ array braid_relation2_performable_indices(const array _inp) {
 array braid_relation2(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    if (is_braid_relation2_performable(_inp, index)) {
-        array _res(n);
-        auto res = _res.mutable_unchecked<1>();
-        for (int i = 0; i < n; i++) res[i] = inp[i];
-        std::swap(res[index], res[(index+1)%n]);
-        return _res;
-    } else {
+    
+    if (!is_braid_relation2_performable(_inp, index)) {
         throw IllegalTransformationException("Illegal transformation");
     }
+
+    array _res(n);
+    auto res = _res.mutable_unchecked<1>();
+    for (int i = 0; i < n; i++) res[i] = inp[i];
+    std::swap(res[index], res[(index+1)%n]);
+    return _res;
 }
 
 array conjugation(const array _inp, const int value, const int index) {
@@ -175,18 +177,19 @@ bool is_destabilization_performable(const array _inp, const int index, const int
 array destabilization(const array _inp, const int index, const int strand_count) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    if (is_destabilization_performable(_inp, index, strand_count)) {
-        const bool on_top = abs(inp[index]) == 1;
-        array _res(n-1);
-        auto res = _res.mutable_unchecked<1>();
-        for (int i = 0; i<n-1; i++) {
-            const int j = i+(i>=index);
-            res[i] = inp[j] - on_top * (sign_of_non_zero(inp[j]));
-        }
-        return _res;
-    } else {
+
+    if (!is_destabilization_performable(_inp, index, strand_count)) {
         throw IllegalTransformationException("Illegal transformation");
     }
+
+    const bool on_top = abs(inp[index]) == 1;
+    array _res(n-1);
+    auto res = _res.mutable_unchecked<1>();
+    for (int i = 0; i<n-1; i++) {
+        const int j = i+(i>=index);
+        res[i] = inp[j] - on_top * (sign_of_non_zero(inp[j]));
+    }
+    return _res;
 }
 
 bool is_remove_sigma_inverse_pair_performable(const array _inp, const int index) {
@@ -208,19 +211,20 @@ array remove_sigma_inverse_pair_performable_indices(const array _inp) {
 array remove_sigma_inverse_pair(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    if (is_remove_sigma_inverse_pair_performable(_inp, index)) {
-        array _res(n-2);
-        auto res = _res.mutable_unchecked<1>();
-        int cnt = 0;
-        for (int i = 0; i < n; i++) {
-            if (i != index && i != (index+1)%n) {
-                res[cnt++] = inp[i];
-            }
-        }
-        return _res;
-    } else {
+
+    if (!is_remove_sigma_inverse_pair_performable(_inp, index)) {
         throw IllegalTransformationException("Illegal transformation");
     }
+
+    array _res(n-2);
+    auto res = _res.mutable_unchecked<1>();
+    int cnt = 0;
+    for (int i = 0; i < n; i++) {
+        if (i != index && i != (index+1)%n) {
+            res[cnt++] = inp[i];
+        }
+    }
+    return _res;
 }
 
 
