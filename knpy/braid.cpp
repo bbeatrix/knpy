@@ -187,7 +187,7 @@ array destabilization(const array _inp, const int index, const int strand_count)
     auto res = _res.mutable_unchecked<1>();
     for (int i = 0; i<n-1; i++) {
         const int j = i+(i>=index);
-        res[i] = inp[j] - on_top * (sign_of_non_zero(inp[j]));
+        res[i] = inp[j] - on_top * sign_of_non_zero(inp[j]);
     }
     return _res;
 }
