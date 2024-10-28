@@ -232,6 +232,7 @@ PYBIND11_MODULE(braid_cpp_impl, m) {
     m.doc() = "Braid C++ implementation";
     py::register_exception<IllegalTransformationException>(m, "IllegalTransformationException");
 
+    // Note that the third parameter of m.def is implicit
     m.def("shift_left", &shift_left, "Shift left implementation");
     m.def("shift_right", &shift_right, "Shift right implementation");
     m.def("is_braid_relation1_performable", &is_braid_relation1_performable, "Is braid relation #1 performable implementation");
