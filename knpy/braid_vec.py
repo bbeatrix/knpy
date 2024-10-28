@@ -210,7 +210,7 @@ class Braid:
         at the top or bottom thread, inserting either a positive or negative
         braid generator.
         """
-        transformed = B.stabilization(self._braid, index, on_top, inverse)
+        transformed = B.stabilization(self._braid, index, on_top, inverse, self.strand_count)
         return Braid._from_array_directly(transformed)
 
     @braid_move
@@ -219,7 +219,7 @@ class Braid:
         Performs destabilization move at given index location, results in
         a braid with one fewer crossings and one fewer strands.
         """
-        transformed = B.destabilization(self._braid, index)
+        transformed = B.destabilization(self._braid, index, self.strand_count)
         return Braid._from_array_directly(transformed)
 
     @braid_move
@@ -257,23 +257,15 @@ class Braid:
             raise IndexOutOfRangeException(
                 f"index = {index} too large, at least the number of crossings = {len(self._braid)}"
             )
-        if index < -len(self._braid):
+        if index < 0:
             raise IndexOutOfRangeException(
-                f"index = {index} too small, smaller than number of crossings * (-1) = {-len(self._braid)}"
+                f"index = {index} too small, smaller than 0 = {-len(self._braid)}"
             )
 
-        # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index =
-        # len(self._braid) - 1`.
-        if index >= 0:
-            index -= len(self._braid)
-        return len(self) != 0 and abs(abs(self._braid[index]) - abs(self._braid[index + 1])) >= 2
+        return B.is_braid_relation2_performable(self._braid, index)
 
     def braid_relation2_performable_indices(self) -> np.ndarray:
-        if len(self._braid) == 0:
-            return np.array([], dtype=int)
-
-        positions = np.where(1 < np.abs(np.diff(np.abs(self._braid), append=abs(self._braid[0]))))[0]
-        return positions
+        return np.nonzero(B.braid_relation2_performable_indices(self._braid))[0]
 
     def is_conjugation_performable(self, value: int, index: int) -> bool:
         """
@@ -302,10 +294,7 @@ class Braid:
         Helper function to determine if destabilisation move is performable
         at given index location, at either the top or bottom strand.
         """
-        valid_index = 0 <= index < self._braid.shape[0]
-        bottom_removable = np.array_equal(np.where(np.abs(self._braid) == self.strand_count - 1)[0], np.array([index]))
-        top_removable = np.array_equal(np.where(np.abs(self._braid) == 1)[0], np.array([index]))
-        return valid_index and (bottom_removable or top_removable)
+        return B.is_destabilization_performable(self._braid, index, self.strand_count)
 
     def is_remove_sigma_inverse_pair_performable(self, index: int) -> bool:
         if index < -len(self):
@@ -313,7 +302,7 @@ class Braid:
         if index >= len(self):
             raise IndexOutOfRangeException(f"index = {index} too large, must be less than length = {len(self)}")
 
-        return len(self) != 0 and (self._braid[index] + self._braid[(index + 1) % len(self)] == 0)
+        return B.is_remove_sigma_inverse_pair_performable(self._braid, index)
 
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
         return np.nonzero(B.remove_sigma_inverse_pair_performable_indices(self._braid))[0]
