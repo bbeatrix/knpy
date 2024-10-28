@@ -4,7 +4,7 @@ import numpy as np
 
 # IMPORTANT: knpy should be installed first
 from knpy.braid_vec import Braid
-# from knpy.braid import BraidTransformation
+from knpy.braid import BraidTransformation
 from knpy import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
 
 
