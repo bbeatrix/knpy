@@ -11,7 +11,7 @@ struct IllegalTransformationException : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
-int sign(int x) {
+int sign_of_non_zero(int x) {
     return x > 0 ? 1 : -1;
 }
 
@@ -46,7 +46,7 @@ bool is_braid_relation1_performable(array _inp, int index) {
     int c = inp[(index+2)%n];
 
     return abs(a) == abs(c) && abs(abs(b) - abs(a)) == 1 
-        && !(sign(b) != sign(a) && sign(b) != sign(c));
+        && !(sign_of_non_zero(b) != sign_of_non_zero(a) && sign_of_non_zero(b) != sign_of_non_zero(c));
 }
 
 array braid_relation1_performable_indices(array _inp) {
@@ -140,7 +140,7 @@ array stabilization(array _inp, int index, bool on_top, bool inverse, int strand
     if (on_top) {
         res[index] = new_sigma;
         for (int i = 0; i < n; i++) {
-            res[i+(i>=index)] = inp[i] + sign(inp[i]);
+            res[i+(i>=index)] = inp[i] + sign_of_non_zero(inp[i]);
         }
     } else {
         new_sigma *= strand_count;
@@ -183,7 +183,7 @@ array destabilization(array _inp, int index, int strand_count) {
         auto res = _res.mutable_unchecked();
         for (int i = 0; i<n-1; i++) {
             int j = i+(i>=index);
-            res[i] = inp[j] - on_top * (sign(inp[j]));
+            res[i] = inp[j] - on_top * (sign_of_non_zero(inp[j]));
         }
         return _res;
     } else {
