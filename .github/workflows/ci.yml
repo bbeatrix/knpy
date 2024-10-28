@@ -30,8 +30,6 @@ jobs:
           path: |
             knpy/braid_cpp_impl.*.so
             knpy/braid_cpp_impl.pyi
-    outputs:
-      build-artifact-id: ${{ steps.build-artifacts.outputs.artifact-id }}
   lint:
     runs-on: ubuntu-latest
     needs: build
@@ -72,12 +70,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./prebuilt/
+          merge-multiple: true
       - name: 'DEBUG: Verify that artifacts have been downloaded'
         run: |
           pwd
           ls -lah knpy
           ls -lah .
-          ls -lah prebuilt
+          ls -lahR prebuilt
+      - name: 'Move artifacts to their location'
+        run: |
+          mv prebuilt/*/* ./knpy/.
       - name: Test with pytest
         run: |
           PYTHONPATH=. pytest -v tests
