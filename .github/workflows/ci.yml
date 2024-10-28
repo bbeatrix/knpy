@@ -49,7 +49,7 @@ jobs:
       - name: Download built braid_cpp_impl module
         uses: actions/download-artifact@v4
         with:
-          pattern: braid_cpp_impl.*
+          pattern: *braid_cpp_impl*
           path: knpy/
       - name: Lint with Pylint 
         run: |
@@ -71,7 +71,7 @@ jobs:
       - name: Download built braid_cpp_impl module
         uses: actions/download-artifact@v4
         with:
-          pattern: braid_cpp_impl.*
+          pattern: *braid_cpp_impl*
           path: knpy/
       - name: Test with pytest
         run: |
