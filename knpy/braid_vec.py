@@ -170,7 +170,7 @@ class Braid:
         assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some
         elements from the beginning).
 
-        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the
+        index: Where the chunk starts, on which operation can be done; must be in the range [0, n) where n is the
             number of crossings in the braid (so n = len(braid))
         """
         transformed = B.braid_relation2(self._braid, index)
