@@ -78,8 +78,7 @@ jobs:
           pwd
           ls -lah knpy
           ls -lah .
-          file "knpy/Built*"
-          file knpy/braid_cpp_impl*
+          ls -lah knpy/*braid_cpp_impl*
       - name: Test with pytest
         run: |
           PYTHONPATH=. pytest -v tests
