@@ -15,9 +15,9 @@ int sign_of_non_zero(int x) {
     return x > 0 ? 1 : -1;
 }
 
-array shift_left(array _inp, int amount = 1) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array shift_left(const array _inp, const int amount = 1) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n);
     auto res = _res.mutable_unchecked();
     for (int i = 0; i < n; i++) {
@@ -26,9 +26,9 @@ array shift_left(array _inp, int amount = 1) {
     return _res;
 }
 
-array shift_right(array _inp, int amount = 1) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array shift_right(const array _inp, const int amount = 1) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n);
     auto res = _res.mutable_unchecked();
     for (int i = 0; i < n; i++) {
@@ -37,30 +37,30 @@ array shift_right(array _inp, int amount = 1) {
     return _res;
 }
 
-bool is_braid_relation1_performable(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+bool is_braid_relation1_performable(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     if (inp.size() < 3) return false;
-    int a = inp[(index+0)%n];
-    int b = inp[(index+1)%n];
-    int c = inp[(index+2)%n];
+    const int a = inp[(index+0)%n];
+    const int b = inp[(index+1)%n];
+    const int c = inp[(index+2)%n];
 
     return abs(a) == abs(c) && abs(abs(b) - abs(a)) == 1 
         && !(sign_of_non_zero(b) != sign_of_non_zero(a) && sign_of_non_zero(b) != sign_of_non_zero(c));
 }
 
-array braid_relation1_performable_indices(array _inp) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array braid_relation1_performable_indices(const array _inp) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n);
     auto res = _res.mutable_unchecked();
     for (int i = 0; i < n; i++) res[i] = is_braid_relation1_performable(_inp, i);
     return _res;
 }
 
-array braid_relation1(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array braid_relation1(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     if (is_braid_relation1_performable(_inp, index)) {
         int signs[3] = {1, 1, 1};
         array _res(n);
@@ -70,7 +70,7 @@ array braid_relation1(array _inp, int index) {
             if (inp[(index+i)%n] < 0) signs[i] = -1;
         }
         for (int i = 0; i < 3; i++) {
-            int j = (index+(i!=1))%n;
+            const int j = (index+(i!=1))%n;
             res[(index+i)%n] = signs[2-i] * abs(inp[j]); 
         }
         return _res;
@@ -79,25 +79,25 @@ array braid_relation1(array _inp, int index) {
     }
 }
 
-bool is_braid_relation2_performable(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
-    int i = (index+1)%n;
+bool is_braid_relation2_performable(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
+    const int i = (index+1)%n;
     return n != 0 && abs(abs(inp[index]) - abs(inp[i])) >= 2;
 }
 
-array braid_relation2_performable_indices(array _inp) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array braid_relation2_performable_indices(const array _inp) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n);
     auto res = _res.mutable_unchecked();
     for (int i = 0; i < n; i++) res[i] = is_braid_relation2_performable(_inp, i);
     return _res;
 }
 
-array braid_relation2(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array braid_relation2(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     if (is_braid_relation2_performable(_inp, index)) {
         array _res(n);
         auto res = _res.mutable_unchecked();
@@ -109,9 +109,9 @@ array braid_relation2(array _inp, int index) {
     }
 }
 
-array conjugation(array _inp, int value, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array conjugation(const array _inp, const int value, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n+2);
     auto res = _res.mutable_unchecked();
     if (index == n + 1) {
@@ -130,9 +130,9 @@ array conjugation(array _inp, int value, int index) {
     return _res;
 }
 
-array stabilization(array _inp, int index, bool on_top, bool inverse, int strand_count) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array stabilization(const array _inp, const int index, const bool on_top, const bool inverse, const int strand_count) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
 
     array _res(n+1);
     auto res = _res.mutable_unchecked();
@@ -152,14 +152,13 @@ array stabilization(array _inp, int index, bool on_top, bool inverse, int strand
     return _res;
 }
 
-bool is_destabilization_performable(array _inp, int index, int strand_count) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
-    bool valid_index = 0 <= index && index < n;
+bool is_destabilization_performable(const array _inp, const int index, const int strand_count) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
+    const bool valid_index = 0 <= index && index < n;
     bool ok1 = false, ok2 = true, ok3 = false, ok4 = true;
-    int cnt = strand_count - 1;
     for (int i = 0; i < n; i++) {
-        if (abs(inp[i]) == cnt) {
+        if (abs(inp[i]) == strand_count - 1) {
             if (i == index) ok1 = true;
             else ok2 = false;
         }
@@ -174,15 +173,15 @@ bool is_destabilization_performable(array _inp, int index, int strand_count) {
     return valid_index && ((ok1 && ok2) || (ok3 && ok4));
 }
 
-array destabilization(array _inp, int index, int strand_count) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array destabilization(const array _inp, const int index, const int strand_count) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     if (is_destabilization_performable(_inp, index, strand_count)) {
-        bool on_top = abs(inp[index]) == 1;
+        const bool on_top = abs(inp[index]) == 1;
         array _res(n-1);
         auto res = _res.mutable_unchecked();
         for (int i = 0; i<n-1; i++) {
-            int j = i+(i>=index);
+            const int j = i+(i>=index);
             res[i] = inp[j] - on_top * (sign_of_non_zero(inp[j]));
         }
         return _res;
@@ -191,25 +190,25 @@ array destabilization(array _inp, int index, int strand_count) {
     }
 }
 
-bool is_remove_sigma_inverse_pair_performable(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
-    int j = (index+1)%n;
+bool is_remove_sigma_inverse_pair_performable(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
+    const int j = (index+1)%n;
     return n != 0 && inp[index] == -inp[j];
 }
 
-array remove_sigma_inverse_pair_performable_indices(array _inp) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array remove_sigma_inverse_pair_performable_indices(const array _inp) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     array _res(n);
     auto res = _res.mutable_unchecked();
     for (int i = 0; i < n; i++) res[i] = is_remove_sigma_inverse_pair_performable(_inp, i);
     return _res;
 }
 
-array remove_sigma_inverse_pair(array _inp, int index) {
-    auto inp = _inp.unchecked<1>();
-    int n = inp.size();
+array remove_sigma_inverse_pair(const array _inp, const int index) {
+    const auto inp = _inp.unchecked<1>();
+    const int n = inp.size();
     if (is_remove_sigma_inverse_pair_performable(_inp, index)) {
         array _res(n-2);
         auto res = _res.mutable_unchecked();
