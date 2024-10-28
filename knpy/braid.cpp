@@ -82,8 +82,7 @@ array braid_relation1(const array _inp, const int index) {
 bool is_braid_relation2_performable(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    const int i = (index+1)%n;
-    return n != 0 && abs(abs(inp[index]) - abs(inp[i])) >= 2;
+    return n != 0 && abs(abs(inp[index]) - abs(inp[(index+1)%n])) >= 2;
 }
 
 array braid_relation2_performable_indices(const array _inp) {
