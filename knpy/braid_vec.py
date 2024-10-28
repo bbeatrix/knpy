@@ -54,7 +54,7 @@ class Braid:
                 raise InvalidBraidException(
                     f"Unable to create braid from {type(sigmas)}, an element is not instance of int or np.integer"
                 )
-            self._braid = np.array(sigmas)
+            self._braid = np.array(sigmas, dtype=np.int32)
 
         if np.any(self._braid == 0):
             raise InvalidBraidException
