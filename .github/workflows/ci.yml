@@ -26,7 +26,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: build-artifacts
         with:
-          name: Built braid_cpp_impl module
+          name: braid_cpp_impl
           path: |
             knpy/braid_cpp_impl.*.so
             knpy/braid_cpp_impl.pyi
@@ -79,7 +79,7 @@ jobs:
           ls -lahR prebuilt
       - name: 'Move artifacts to their location'
         run: |
-          mv prebuilt/*/* ./knpy/.
+          mv prebuilt/* ./knpy/.
       - name: Test with pytest
         run: |
           PYTHONPATH=. pytest -v tests
