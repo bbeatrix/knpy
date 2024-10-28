@@ -47,8 +47,11 @@ jobs:
       - name: Download built braid_cpp_impl module
         uses: actions/download-artifact@v4
         with:
-          pattern: '*braid_cpp_impl*'
-          path: knpy/
+          path: ./prebuilt/
+          merge-multiple: true
+      - name: 'Move artifacts to their location'
+        run: |
+          mv prebuilt/* ./knpy/.
       - name: Lint with Pylint 
         run: |
           (cd knpy && pylint -v --disable fixme *.py)
@@ -71,12 +74,6 @@ jobs:
         with:
           path: ./prebuilt/
           merge-multiple: true
-      - name: 'DEBUG: Verify that artifacts have been downloaded'
-        run: |
-          pwd
-          ls -lah knpy
-          ls -lah .
-          ls -lahR prebuilt
       - name: 'Move artifacts to their location'
         run: |
           mv prebuilt/* ./knpy/.
