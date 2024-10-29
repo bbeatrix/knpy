@@ -229,6 +229,17 @@ array remove_sigma_inverse_pair(const array _inp, const int index) {
     return _res;
 }
 
+int calculate_heuristic(array _inp) {
+    auto inp = _inp.unchecked<1>();
+    int n = inp.size();
+    int res = 4*n;
+    for (int i = 0; i < n; i++) {
+        for (int j = std::max(0, i-15); j < i; j++) {
+            res += abs(inp[j]) > abs(inp[i]);
+        }
+    }
+    return res;
+}
 
 PYBIND11_MODULE(braid_cpp_impl, m) {
     m.doc() = "Braid C++ implementation";
@@ -251,4 +262,6 @@ PYBIND11_MODULE(braid_cpp_impl, m) {
     m.def("is_remove_sigma_inverse_pair_performable", &is_remove_sigma_inverse_pair_performable, "Is remove sigma inverse pair performable implementation");
     m.def("remove_sigma_inverse_pair_performable_indices", &remove_sigma_inverse_pair_performable_indices, "Remove sigma inverse pair performable indices implementation");
     m.def("remove_sigma_inverse_pair", &remove_sigma_inverse_pair, "Remove sigma inverse pair implementation");
+
+    m.def("calculate_heuristic", &calculate_heuristic, "Function to calculate A* heuristic");
 }

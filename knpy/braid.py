@@ -378,6 +378,7 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
+        raise Exception("Please use the c++ implementation")
         performable_moves: list[BraidTransformation] = []
 
         for i in range(0, len(self)):

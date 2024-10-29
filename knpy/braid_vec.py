@@ -310,27 +310,24 @@ class Braid:
         index: Optional index parameter required for some moves.
         Returns: True if the move is performable, otherwise False.
         """
-        performable_moves: list[BraidTransformation] = []
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
 
         for i in range(0, len(self)):
             if self.is_destabilization_performable(i):
                 performable_moves.extend([partial(self.destabilization, i)])
 
-        for i in range(0, len(self) + 1):
-            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=False)])
-            performable_moves.extend([partial(self.stabilization, index=i, on_top=False, inverse=True)])
-            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=False)])
-            performable_moves.extend([partial(self.stabilization, index=i, on_top=True, inverse=True)])
+        performable_moves.extend([partial(self.stabilization, index=0, on_top=False, inverse=False)])
+        performable_moves.extend([partial(self.stabilization, index=0, on_top=False, inverse=True)])
+        performable_moves.extend([partial(self.stabilization, index=0, on_top=True, inverse=False)])
+        performable_moves.extend([partial(self.stabilization, index=0, on_top=True, inverse=True)])
 
         conjugation_values = list(range(-self._n + 1, 0)) + list(range(1, self._n))
-        conjugation_indices = range(0, len(self) + 2)
         conjugation_performable_moves: list[BraidTransformation] = []
         for v in conjugation_values:
-            for i in conjugation_indices:
-                if self.is_conjugation_performable(v, i):
-                    conjugation_performable_moves = conjugation_performable_moves + [
-                        partial(self.conjugation, value=v, index=i)
-                    ]
+            if self.is_conjugation_performable(v, 0):
+                conjugation_performable_moves = conjugation_performable_moves + [
+                    partial(self.conjugation, value=v, index=0)
+                ]
 
         performable_moves += conjugation_performable_moves
 
@@ -364,3 +361,9 @@ class Braid:
 
     def __len__(self) -> int:
         return len(self._braid)
+    
+    def __lt__(self, other) -> bool:
+        return False
+
+    def calculate_heuristic(self) -> int:
+        return B.calculate_heuristic(self._braid) 
