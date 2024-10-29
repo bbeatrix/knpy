@@ -34,7 +34,8 @@ If you want to use the faster `Braid` implementation in `braid_vec.py`, you need
 to compile the C++ modules.
 
 > ⚠️ Warning: although the APIs are very similar, some features, such as negative 
-> indexing is not supported in the faster implementations.
+> indexing is not supported in the faster implementations. _Some errors are omitted
+> please test using the python implementation._
 
 First, make sure that you have `pybind11` and CMake and a useable build 
 toolchain installed. Then create a build directory:
