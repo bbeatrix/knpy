@@ -3,15 +3,33 @@ from typing import Callable
 import numpy as np
 import torch
 import braidvisualiser as bv
-from functools import partial
+from functools import partial, wraps
 from .data_utils import knots_in_braid_notation_dict
 from .exceptions import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
+
+from . import braid_cpp_impl as B
 
 type BraidNotation = np.ndarray
 type BraidTransformation = Callable[[], "Braid"]
 
 
+def braid_move(fun: Callable):
+    """
+    Decorator that transforms C++ exceptions into ``IllegalTransformationException``
+    """
+
+    @wraps(fun)
+    def wrapped(*args, **kwargs):
+        try:
+            return fun(*args, **kwargs)
+        except B.IllegalTransformationException as e:
+            raise IllegalTransformationException(str(e.args[0])) from e
+
+    return wrapped
+
+
 class Braid:
+
     def __init__(self, sigmas: np.ndarray | list[int] | str, notation_index: int = 0, copy_sigmas: bool = True):
         """
         Init Braid class, sigmas should not contain zero or bigger value than n_strands
@@ -46,6 +64,18 @@ class Braid:
         else:
             self._n = np.max(np.abs(self._braid)) + 1
 
+    @classmethod
+    def _from_array_directly(cls, inp: np.ndarray):
+        # Do not do this at home!
+        # Only doing this in the hopes of faster runtime
+        obj = cls.__new__(cls)
+        obj._braid = inp
+        if inp.size == 0:
+            obj._n = 1
+        else:
+            obj._n = np.max(np.abs(inp)) + 1
+        return obj
+
     def values(self) -> tuple[int, BraidNotation]:
         """
         Returns (self._n,self._braid) values as tuple
@@ -77,36 +107,40 @@ class Braid:
 
     # Action functions from paper https://arxiv.org/pdf/2010.16263
 
+    @braid_move
     def shift_left(self, amount: int = 1) -> "Braid":
         """
         Shifts the crossings of the braid left. Numbering the original crossings as `[0, 1, 2, ..., n - 1]` it
         transforms it to `[amount, amount + 1, amount + 2, ..., n - 2, n - 1, 0, 1, 2, ..., amount - 1]`.
 
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
+        amount: in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
+        if amount < 0:
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
+        if amount >= len(self):
+            if len(self) == 0:
+                raise IllegalTransformationException("Cannot shift empty braid.")
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
+        shifted = B.shift_left(self._braid, amount)
+        return Braid._from_array_directly(shifted)
 
-        if amount >= len(self._braid) or amount <= -len(self._braid):
-            raise IllegalTransformationException(
-                f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})"
-            )
-
-        left_shifted_braid = np.concatenate((self._braid[amount:], self._braid[:amount]))
-        return Braid(left_shifted_braid, copy_sigmas=False)
-
+    @braid_move
     def shift_right(self, amount: int = 1) -> "Braid":
         """
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
-        amount: in the range (-n, n) where n is the number of crossings in the braid (so n = len(braid))
+        amount: in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
-
-        if amount >= len(self._braid) or amount <= -len(self._braid):
-            raise IllegalTransformationException(
-                f"amount = {amount} not in range ({-len(self._braid)}, {len(self._braid)})"
-            )
-
-        return self.shift_left(-amount)
+        if amount < 0:
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
+        if amount >= len(self):
+            if len(self) == 0:
+                raise IllegalTransformationException("Cannot shift empty braid.")
+            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
+        shifted = B.shift_right(self._braid, amount)
+        return Braid._from_array_directly(shifted)
 
     # Braid relations
+    @braid_move
     def braid_relation1(self, index: int) -> "Braid":
         """
         Perform first braid relation.
@@ -119,23 +153,13 @@ class Braid:
         assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some
         elements from the beginning).
 
-        index: Where the chunk starts, on which operation can be done; in the range [-n, n) where n is the number of
+        index: Where the chunk starts, on which operation can be done; in the range [0, n) where n is the number of
         crossings in the braid (so n = len(braid))
         """
-        if self.is_braid_relation1_performable(index):
-            signs = np.ones(3)
-            if index > 0:
-                index -= len(self._braid)
-            signs[self._braid[[index, index + 1, index + 2]] < 0] = -1
-            transformed_braid = self._braid.copy()
-            transformed_braid[[index, index + 1, index + 2]] = (
-                abs(self._braid)[[index + 1, index, index + 1]]
-            ) * signs[::-1]
+        transformed = B.braid_relation1(self._braid, index)
+        return Braid._from_array_directly(transformed)
 
-            return Braid(transformed_braid, copy_sigmas=False)
-        else:
-            raise IllegalTransformationException(f"Braid relation 1 is not performable at index {index}")
-
+    @braid_move
     def braid_relation2(self, index: int) -> "Braid":
         """
         Perform second braid relation.
@@ -146,25 +170,14 @@ class Braid:
         assumed to be circular, the chunk may cross the end of the array (so some elements from the end, then some
         elements from the beginning).
 
-        index: Where the chunk starts, on which operation can be done; must be in the range [-n, n) where n is the
+        index: Where the chunk starts, on which operation can be done; must be in the range [0, n) where n is the
             number of crossings in the braid (so n = len(braid))
         """
-        if self.is_braid_relation2_performable(index):
-            # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if
-            # `index = len(self._braid) - 1`.
-            if index >= 0:
-                index -= len(self._braid)
-            transformed_braid = self._braid.copy()
-            transformed_braid[index], transformed_braid[index + 1] = (
-                transformed_braid[index + 1],
-                transformed_braid[index],
-            )
-
-            return Braid(transformed_braid, copy_sigmas=False)
-        else:
-            raise IllegalTransformationException(f"Braid relation 2 is not performable at index {index}")
+        transformed = B.braid_relation2(self._braid, index)
+        return Braid._from_array_directly(transformed)
 
     # Markov moves
+    @braid_move
     def conjugation(self, value: int, index: int) -> "Braid":
         """
         Conjugates the braid with sigma indexed by index1, inserts a index sigma indexed by index1 and -index1 to the
@@ -188,107 +201,48 @@ class Braid:
         4: -a 0 1 2 a
         ```
         """
-        # This should not be needed as `is_conjugation_performable` should always return True or raise an exception, but
-        # is kept here to be sure.
-        if self.is_conjugation_performable(value, index):
+        transformed = B.conjugation(self._braid, value, index)
+        return Braid._from_array_directly(transformed)
 
-            if index == len(self) + 1:
-                conjugated_braid = np.concatenate((np.array([-value]), self._braid, np.array([value])))
-            else:
-                conjugated_braid = np.concatenate((self._braid[:index], np.array([value, -value]), self._braid[index:]))
-
-            return Braid(conjugated_braid, copy_sigmas=False)
-        else:
-            raise IllegalTransformationException(f"Conjugation is not performable at index {index}")
-
-    def stabilization(self, index: int | None = None, on_top=False, inverse: bool = False) -> "Braid":
+    @braid_move
+    def stabilization(self, index: int, on_top=False, inverse: bool = False) -> "Braid":
         """
         Performs stabilization move before specified crossing index, either
         at the top or bottom thread, inserting either a positive or negative
         braid generator.
         """
+        transformed = B.stabilization(self._braid, index, on_top, inverse, self.strand_count)
+        return Braid._from_array_directly(transformed)
 
-        if index is None:
-            index = self._braid.shape[0]
-
-        assert isinstance(index, int)
-
-        if index < 0 or index > self._braid.shape[0]:
-            raise IndexOutOfRangeException("Index must be between 0 and length of braid")
-
-        braid_stabilized = self._braid.copy()
-        if inverse:
-            new_sigma = -1
-        else:
-            new_sigma = +1
-
-        if on_top:
-            braid_stabilized += np.sign(braid_stabilized)
-            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
-        else:
-            new_sigma = new_sigma * self.strand_count
-            braid_stabilized = np.insert(braid_stabilized, index, new_sigma)
-
-        return Braid(braid_stabilized, copy_sigmas=False)
-
+    @braid_move
     def destabilization(self, index: int) -> "Braid":
         """
         Performs destabilization move at given index location, results in
         a braid with one fewer crossings and one fewer strands.
         """
-        if self.is_destabilization_performable(index):
-            on_top = abs(self._braid[index]) == 1
-            braid_destabilized = np.delete(self._braid, [index])
-            if on_top:
-                braid_destabilized -= np.sign(braid_destabilized)
-            return Braid(braid_destabilized, copy_sigmas=False)
-        else:
-            raise IllegalTransformationException(f"Destabilization is not performable at index {index}")
+        transformed = B.destabilization(self._braid, index, self.strand_count)
+        return Braid._from_array_directly(transformed)
 
+    @braid_move
     def remove_sigma_inverse_pair(self, index: int) -> "Braid":
         """
         Remove consequtive inverse on a given place (last and first element are consequtive)
 
         index: the smaller index (or when the pair is the last and first then it is the last index); must be in the
-            range [-k, k) where k is the number of crossings (so `len(braid)`).
+            range [0, k) where k is the number of crossings (so `len(braid)`).
         """
-        if self.is_remove_sigma_inverse_pair_performable(index):
-            if index < 0:
-                index += len(self)
-
-            if index == 0:
-                modified_braid = self._braid[2:]
-            elif index == len(self) - 2:
-                modified_braid = self._braid[:-2]
-            elif index == len(self) - 1:
-                modified_braid = self._braid[1:-1]
-            else:
-                modified_braid = np.concatenate((self._braid[:(index)], self._braid[(index + 2) :]))
-            return Braid(modified_braid)
-        else:
-            raise IllegalTransformationException(f"Sigma inverse pair is not removable at index {index}")
+        transformed = B.remove_sigma_inverse_pair(self._braid, index)
+        return Braid._from_array_directly(transformed)
 
     # Chech whether a move is performable or not
     def is_braid_relation1_performable(self, index: int) -> bool:
         """
         Check if braid relation 1 is performable at the index. See documentation of `braid_relation1` for details.
 
-        index: Where the chunk would start; in the range [-n, n) where n is the number of crossings in the braid (so n =
+        index: Where the chunk would start; in the range [0, n) where n is the number of crossings in the braid (so n =
             len(braid))
         """
-        if len(self._braid) < 3:
-            return False
-        if index >= 0:
-            index -= len(self)
-        return (
-            len(self) != 0
-            and abs(self._braid[index]) == abs(self._braid[index + 2])
-            and abs(abs(self._braid[index + 1]) - abs(self._braid[index])) == 1
-            and not (
-                np.sign(self._braid[index + 1]) != np.sign(self._braid[index])
-                and np.sign(self._braid[index + 1]) != np.sign(self._braid[index + 2])
-            )
-        )
+        return B.is_braid_relation1_performable(self._braid, index)
 
     def braid_relation1_performable_indices(self) -> np.ndarray:
         """
@@ -297,34 +251,22 @@ class Braid:
 
         returns: indices in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
-        positions = []
-        for index in range(len(self._braid)):
-            if self.is_braid_relation1_performable(index):
-                positions.append(index)
-        return np.array(positions)
+        return np.nonzero(B.braid_relation1_performable_indices(self._braid))[0]
 
     def is_braid_relation2_performable(self, index: int) -> bool:
         if index >= len(self._braid):
             raise IndexOutOfRangeException(
                 f"index = {index} too large, at least the number of crossings = {len(self._braid)}"
             )
-        if index < -len(self._braid):
+        if index < 0:
             raise IndexOutOfRangeException(
-                f"index = {index} too small, smaller than number of crossings * (-1) = {-len(self._braid)}"
+                f"index = {index} too small, smaller than 0"
             )
 
-        # Since braid is circular, we make sure index is negative, so we can't get an out of bounds error if `index =
-        # len(self._braid) - 1`.
-        if index >= 0:
-            index -= len(self._braid)
-        return len(self) != 0 and abs(abs(self._braid[index]) - abs(self._braid[index + 1])) >= 2
+        return B.is_braid_relation2_performable(self._braid, index)
 
     def braid_relation2_performable_indices(self) -> np.ndarray:
-        if len(self._braid) == 0:
-            return np.array([])
-
-        positions = np.where(1 < np.abs(np.diff(np.abs(self._braid), append=abs(self._braid[0]))))[0]
-        return positions
+        return np.nonzero(B.braid_relation2_performable_indices(self._braid))[0]
 
     def is_conjugation_performable(self, value: int, index: int) -> bool:
         """
@@ -353,23 +295,13 @@ class Braid:
         Helper function to determine if destabilisation move is performable
         at given index location, at either the top or bottom strand.
         """
-        valid_index = 0 <= index < self._braid.shape[0]
-        bottom_removable = np.array_equal(np.where(np.abs(self._braid) == self.strand_count - 1)[0], np.array([index]))
-        top_removable = np.array_equal(np.where(np.abs(self._braid) == 1)[0], np.array([index]))
-        return valid_index and (bottom_removable or top_removable)
+        return B.is_destabilization_performable(self._braid, index, self.strand_count)
 
     def is_remove_sigma_inverse_pair_performable(self, index: int) -> bool:
-        if index < -len(self):
-            raise IndexOutOfRangeException(f"index = {index} too small, must by at least -length = {-len(self)}")
-        if index >= len(self):
-            raise IndexOutOfRangeException(f"index = {index} too large, must be less than length = {len(self)}")
-
-        return len(self) != 0 and (self._braid[index] + self._braid[(index + 1) % len(self)] == 0)
+        return B.is_remove_sigma_inverse_pair_performable(self._braid, index)
 
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
-        indices = np.array([i for i in range(len(self)) if self.is_remove_sigma_inverse_pair_performable(i)])
-
-        return indices
+        return np.nonzero(B.remove_sigma_inverse_pair_performable_indices(self._braid))[0]
 
     def performable_moves(self) -> list[BraidTransformation]:
         """
