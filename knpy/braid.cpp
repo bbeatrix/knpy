@@ -12,7 +12,7 @@ struct IllegalTransformationException : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
-int sign_of_non_zero(int x) {
+int sign_of_non_zero(const int x) {
     return x > 0 ? 1 : -1;
 }
 
