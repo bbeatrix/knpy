@@ -303,6 +303,36 @@ class Braid:
     def remove_sigma_inverse_pair_performable_indices(self) -> np.ndarray:
         return np.nonzero(B.remove_sigma_inverse_pair_performable_indices(self._braid))[0]
 
+    def performable_rel1(self) -> list[BraidTransformation]:
+        braid_relation1_indices = self.braid_relation1_performable_indices()
+        braid_relation2_performable_moves: list[BraidTransformation] = [
+            partial(self.braid_relation1, index=i) for i in braid_relation1_indices
+        ]
+        return braid_relation2_performable_moves
+    
+    def performable_rel2(self) -> list[BraidTransformation]:
+        braid_relation2_indices = self.braid_relation2_performable_indices()
+        braid_relation2_performable_moves: list[BraidTransformation] = [
+            partial(self.braid_relation2, index=i) for i in braid_relation2_indices
+        ]
+        return braid_relation2_performable_moves
+    
+    def performable_collapse(self) -> list[BraidTransformation]:
+        performable_moves: list[BraidTransformation] = [self.shift_left, self.shift_right]
+
+        for i in range(0, len(self)):
+            if self.is_destabilization_performable(i):
+                performable_moves.extend([partial(self.destabilization, i)])
+
+        braid_remove_sigma_inverse_pairs = self.remove_sigma_inverse_pair_performable_indices()
+        braid_remove_sigma_inverse_pair_moves: list[BraidTransformation] = [
+            partial(self.remove_sigma_inverse_pair, index=i) for i in braid_remove_sigma_inverse_pairs
+        ]
+
+        performable_moves += braid_remove_sigma_inverse_pair_moves
+        
+        return performable_moves
+
     def performable_moves(self) -> list[BraidTransformation]:
         """
         Checks if a move is performable.

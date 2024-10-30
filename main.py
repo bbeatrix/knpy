@@ -5,6 +5,8 @@ import heapq
 import time
 import matplotlib.pyplot as plt
 import tqdm
+import torch
+import network
 
 def get_time() -> int:
     return int(round(time.time() * 1000))
@@ -44,7 +46,7 @@ def convert_to_csv(braids):
     f.write(csv_output)
     f.close()
 
-def minimal_crossing(starting_braid: Braid, execution_time: int):
+def minimal_crossing(starting_braid: Braid, execution_time: int, model):
     pq = []
     dist = {}
     it = 0
@@ -64,14 +66,37 @@ def minimal_crossing(starting_braid: Braid, execution_time: int):
     #             res += abs(x[i-j]) > abs(x[i])
     #     return res
 
+    queue = []
+
+    def calc_queue(model):
+        nonlocal queue
+        tensor = torch.zeros((len(queue), 100))
+        for idx, (depth, arr) in enumerate(queue):
+            b = Braid(arr)
+            while len(b) < 100:
+                b = b.stabilization(0, on_top=False)
+            tensor[idx] = b.to_torch()
+        values = model(tensor)
+        print(values)
+        for idx in range(len(queue)):
+            heapq.heappush(pq, (values[idx] * 5 + depth, Braid(queue[idx][1])))
+        queue = []
+    
     def add_node(braid: Braid, new_depth: int):
+        nonlocal queue
         fingerprint = get_fingerprint(braid)
         if not fingerprint in dist:
             dist[fingerprint] = new_depth
-            heapq.heappush(pq, (braid.calculate_heuristic() * 5 + new_depth, braid))
+            if len(pq) <= 100:
+                heapq.heappush(pq, (braid.calculate_heuristic() * 5 + new_depth, braid))
+            else:
+                queue.append((new_depth, braid.notation(False)))
 
     add_node(starting_braid, 0)
-    while len(pq) > 0 and len(best) > 12:
+    while len(best) > 12:
+        if len(pq) == 0 or len(queue) > 1024:
+            calc_queue(model)
+            continue
         it += 1
         if it % 100 == 0:
             pq = pq[:10000]
@@ -100,26 +125,30 @@ def minimal_crossing(starting_braid: Braid, execution_time: int):
 #     max_score += len(x)-12
 #     score += len(braid)-12
 
-score = 0
-max_score = 0
-X = []
-Y = []
-Z = []
-for i in tqdm.tqdm(benchmark_braids):
-    x = Braid(benchmark_braids[i][0])
-    braid = minimal_crossing(x, 1000)
-    max_score += len(x)-12
-    score += len(braid)-12
-    X.append(len(x))
-    Y.append(len(braid))
-    Z.append("orange" if int(i.split("_")[0]) >= 20  else "green")
-print("Score =", 1-score/max_score)
-plt.vlines(12, 0, 100, colors='red', linestyles='dashed', label='True crossing number')
-plt.title("Crossing number prediction of 11n_16 equivalent knots")
-plt.scatter(Y, X, c=Z)
-plt.xlim(0, 100)
-plt.ylim(0, 100)
-plt.xlabel("Predicted crossing number")
-plt.ylabel("Input crossing number")
-plt.legend()
-plt.show()
+model = network.NetworkV1()
+model.load_state_dict(torch.load("model.pt"))
+model.eval()
+with torch.no_grad():
+    score = 0
+    max_score = 0
+    X = []
+    Y = []
+    Z = []
+    for i in tqdm.tqdm(list(benchmark_braids.keys())[:10]):
+        x = Braid(benchmark_braids[i][0])
+        braid = minimal_crossing(x, 10000, model)
+        max_score += len(x)-12
+        score += len(braid)-12
+        X.append(len(x))
+        Y.append(len(braid))
+        Z.append("orange" if int(i.split("_")[0]) >= 20  else "green")
+    print("Score =", 1-score/max_score)
+    plt.vlines(12, 0, 100, colors='red', linestyles='dashed', label='True crossing number')
+    plt.title("Crossing number prediction of 11n_16 equivalent knots")
+    plt.scatter(Y, X, c=Z)
+    plt.xlim(0, 100)
+    plt.ylim(0, 100)
+    plt.xlabel("Predicted crossing number")
+    plt.ylabel("Input crossing number")
+    plt.legend()
+    plt.show()
