@@ -22,7 +22,7 @@ array shift_left(const array _inp, const int amount = 1) {
     array _res(n);
     auto res = _res.mutable_unchecked<1>();
     for (int i = 0; i < n; i++) {
-        res[i] = inp[(i+amount)%n];
+        res[i] = inp[(i+amount+n)%n];
     }
     return _res;
 }
@@ -42,9 +42,9 @@ bool is_braid_relation1_performable(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
     if (inp.size() < 3) return false;
-    const int a = inp[(index+0)%n];
-    const int b = inp[(index+1)%n];
-    const int c = inp[(index+2)%n];
+    const int a = inp[(index+n+0)%n];
+    const int b = inp[(index+n+1)%n];
+    const int c = inp[(index+n+2)%n];
 
     return abs(a) == abs(c) && abs(abs(b) - abs(a)) == 1 
         && !(sign_of_non_zero(b) != sign_of_non_zero(a) && sign_of_non_zero(b) != sign_of_non_zero(c));
@@ -72,11 +72,11 @@ array braid_relation1(const array _inp, const int index) {
     auto res = _res.mutable_unchecked<1>();
     for (int i = 0; i < n; i++) res[i] = inp[i];
     for (int i = 0; i < 3; i++) {
-        if (inp[(index+i)%n] < 0) signs[i] = -1;
+        if (inp[(index+i+n)%n] < 0) signs[i] = -1;
     }
     for (int i = 0; i < 3; i++) {
-        const int j = (index+(i!=1))%n;
-        res[(index+i)%n] = signs[2-i] * abs(inp[j]); 
+        const int j = (index+n+(i!=1))%n;
+        res[(index+n+i)%n] = signs[2-i] * abs(inp[j]); 
     }
     return _res;
 }
@@ -84,7 +84,7 @@ array braid_relation1(const array _inp, const int index) {
 bool is_braid_relation2_performable(const array _inp, const int index) {
     const auto inp = _inp.unchecked<1>();
     const int n = inp.size();
-    return n != 0 && abs(abs(inp[index]) - abs(inp[(index+1)%n])) >= 2;
+    return n != 0 && abs(abs(inp[(index+n)%n]) - abs(inp[(index+n+1)%n])) >= 2;
 }
 
 array braid_relation2_performable_indices(const array _inp) {
@@ -107,7 +107,7 @@ array braid_relation2(const array _inp, const int index) {
     array _res(n);
     auto res = _res.mutable_unchecked<1>();
     for (int i = 0; i < n; i++) res[i] = inp[i];
-    std::swap(res[index], res[(index+1)%n]);
+    std::swap(res[(index+n)%n], res[(index+n+1)%n]);
     return _res;
 }
 

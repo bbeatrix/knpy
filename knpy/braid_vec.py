@@ -115,12 +115,10 @@ class Braid:
 
         amount: in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
-        if amount < 0:
-            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
-        if amount >= len(self):
+        if amount >= len(self) or amount <= -len(self):
             if len(self) == 0:
                 raise IllegalTransformationException("Cannot shift empty braid.")
-            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
+            raise IndexOutOfRangeException(f"The absolute value of amount ({amount}) should be less than the length.")
         shifted = B.shift_left(self._braid, amount)
         return Braid._from_array_directly(shifted)
 
@@ -130,12 +128,10 @@ class Braid:
         Shifts the crossings of the braid right. Same as shifting left by the negative amount.
         amount: in the range [0, n) where n is the number of crossings in the braid (so n = len(braid))
         """
-        if amount < 0:
-            raise IndexOutOfRangeException(f"Amount ({amount}) should be positive.")
-        if amount >= len(self):
+        if amount >= len(self) or amount <= -len(self):
             if len(self) == 0:
                 raise IllegalTransformationException("Cannot shift empty braid.")
-            raise IndexOutOfRangeException(f"Amount ({amount}) should be less than the length.")
+            raise IndexOutOfRangeException(f"The absolute value of amount ({amount}) should be less than the length.")
         shifted = B.shift_right(self._braid, amount)
         return Braid._from_array_directly(shifted)
 
