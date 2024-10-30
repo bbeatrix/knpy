@@ -202,10 +202,10 @@ class TestBraidClassBraidRelationsConjugation:
         with pytest.raises(IndexOutOfRangeException):
             braid.is_conjugation_performable(value=1, index=6)
 
-    #def test_conjugation_empty(self) -> None:
-    #    braid = Braid([])
-    #    with pytest.raises(ValueError):
-    #        braid = braid.conjugation(value=0, index=0)
+    def test_conjugation_empty(self) -> None:
+        braid = Braid([])
+        with pytest.raises(ValueError):
+            braid = braid.conjugation(value=0, index=0)
 
     def test_conjugation(self) -> None:
         braid = Braid([-1, -2, 3, 4])
@@ -247,10 +247,10 @@ class TestBraidClassBraidRelationsConjugation:
         values = braid.conjugation(value=-4, index=2).notation()
         assert values[2] == -4 and values[3] == 4
 
-    #def test_conjugation_exception(self) -> None:
-    #    braid = Braid([-1, -2, 3, 4])
-    #    with pytest.raises(ValueError):
-    #        braid = braid.conjugation(value=5, index=4)
+    def test_conjugation_exception(self) -> None:
+        braid = Braid([-1, -2, 3, 4])
+        with pytest.raises(ValueError):
+            braid = braid.conjugation(value=5, index=4)
 
 
 class TestBraidClassBraidRelationsBraidRelation1:
@@ -376,10 +376,10 @@ class TestBraidClassBraidRelationsBraidRelation2:
         braid = Braid([])
         assert braid.braid_relation2_performable_indices().shape[0] == 0
 
-    #def test_braid_relation2_empty(self) -> None:
-    #    braid = Braid([])
-    #    with pytest.raises(IndexOutOfRangeException):
-    #        braid.braid_relation2(index=0)
+    def test_braid_relation2_empty(self) -> None:
+        braid = Braid([])
+        with pytest.raises(IndexOutOfRangeException):
+            braid.braid_relation2(index=0)
 
     def test_braid_relation2_performable(self) -> None:
         braid = Braid([3, 1, 2, 1])
@@ -404,15 +404,15 @@ class TestBraidClassBraidRelationsBraidRelation2:
         for i in range(-2, 0):
             with pytest.raises(IllegalTransformationException):
                 braid.braid_relation2(i)
-        #for i in range(-5, -3):
-        #    with pytest.raises(IndexOutOfRangeException):
-        #        braid.braid_relation2(i)
+        for i in range(-5, -3):
+            with pytest.raises(IndexOutOfRangeException):
+                braid.braid_relation2(i)
 
-    #def test_braid_relation2_big_index_exception(self) -> None:
-    #    braid = Braid([1, -3, 2])
-    #    for i in range(5):
-    #        with pytest.raises(IndexOutOfRangeException):
-    #            braid.braid_relation2(3 + i)
+    def test_braid_relation2_big_index_exception(self) -> None:
+        braid = Braid([1, -3, 2])
+        for i in range(5):
+            with pytest.raises(IndexOutOfRangeException):
+                braid.braid_relation2(3 + i)
 
     def test_braid_relation2_loop_around(self) -> None:
         braid = Braid([3, 2, 1])

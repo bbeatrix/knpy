@@ -169,6 +169,7 @@ class Braid:
         index: Where the chunk starts, on which operation can be done; must be in the range [0, n) where n is the
             number of crossings in the braid (so n = len(braid))
         """
+        self._braid_relation2_sanity_check(index)
         transformed = B.braid_relation2(self._braid, index)
         return Braid._from_array_directly(transformed)
 
@@ -197,6 +198,7 @@ class Braid:
         4: -a 0 1 2 a
         ```
         """
+        self._conjugation_sanity_check(value,index)
         transformed = B.conjugation(self._braid, value, index)
         return Braid._from_array_directly(transformed)
 
@@ -229,7 +231,7 @@ class Braid:
         """
         transformed = B.remove_sigma_inverse_pair(self._braid, index)
         return Braid._from_array_directly(transformed)
-
+    
     # Chech whether a move is performable or not
     def is_braid_relation1_performable(self, index: int) -> bool:
         """
@@ -249,27 +251,24 @@ class Braid:
         """
         return np.nonzero(B.braid_relation1_performable_indices(self._braid))[0]
 
-    def is_braid_relation2_performable(self, index: int) -> bool:
+    def _braid_relation2_sanity_check(self,index: int ):
         if index >= len(self._braid):
             raise IndexOutOfRangeException(
                 f"index = {index} too large, at least the number of crossings = {len(self._braid)}"
             )
-        if index < 0:
+        if index < -len(self._braid):
             raise IndexOutOfRangeException(
-                f"index = {index} too small, smaller than 0"
+                f"index = {index} too small, smaller than the number of crossings multiplied by minus one {-len(self._braid)}"
             )
-
+        
+    def is_braid_relation2_performable(self, index: int) -> bool:
+        self._braid_relation2_sanity_check(index)
         return B.is_braid_relation2_performable(self._braid, index)
 
     def braid_relation2_performable_indices(self) -> np.ndarray:
         return np.nonzero(B.braid_relation2_performable_indices(self._braid))[0]
-
-    def is_conjugation_performable(self, value: int, index: int) -> bool:
-        """
-        See documentation conjugation member function for details.
-
-        Note: this function either returns true or raises an exception.
-        """
+    
+    def _conjugation_sanity_check(self, value: int, index: int):
         if value == 0:
             raise ValueError("Sigma can't be zero")
         if value <= -self._n or value >= self._n:
@@ -284,6 +283,13 @@ class Braid:
                 f"Conjugation index (currently {index}) can be at most the number of crossings + 1 = {len(self._braid)}"
             )
 
+    def is_conjugation_performable(self, value: int, index: int) -> bool:
+        """
+        See documentation conjugation member function for details.
+
+        Note: this function either returns true or raises an exception.
+        """
+        self._conjugation_sanity_check(value,index)
         return True
 
     def is_destabilization_performable(self, index: int) -> bool:
