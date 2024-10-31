@@ -1,11 +1,18 @@
 from functools import partial
 import pytest
 import numpy as np
+import pandas as pd
 
 # IMPORTANT: knpy should be installed first
 from knpy.braid_vec import Braid
 from knpy.braid import BraidTransformation
 from knpy import IllegalTransformationException, InvalidBraidException, IndexOutOfRangeException
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import composite_detector as cd
 
 
 class TestBraidClassBraidRelationsInit:
@@ -684,3 +691,22 @@ class TestBraidPerformableMoves:
                 assert state in all_states
             for state in all_states:
                 assert state in states
+
+class TestBraidCompositeDetection:
+    prime_knots = pd.read_csv("./knpy/data_knots/prime_knots_in_braid_notation.csv")
+    def test_is_prime(self):
+        rng = np.random.RandomState(42)
+        braids = self.prime_knots["Braid Notation"].values
+        
+        for i in range(50):
+            braid = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
+            assert cd.detect_composite(braid) == False
+    
+    def test_is_composite(self):
+        rng = np.random.RandomState(42)
+        braids = self.prime_knots["Braid Notation"].values
+        for i in range(50):
+            braid1 = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
+            braid2 = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
+            combined_braid = cd.combine_braids(braid1, braid2)
+            assert cd.detect_composite(combined_braid) == True
