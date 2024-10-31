@@ -54,7 +54,7 @@ import matplotlib.pyplot as plt
 
 def compute_braid(key):
     x = Braid(benchmark_braids[key][0])
-    braid = minimal_crossing(x, 1000)
+    braid = minimal_crossing(x, 5000)
     return len(x), len(braid), key
 
 if __name__ == "__main__":
@@ -65,15 +65,16 @@ if __name__ == "__main__":
     Z = []
     labels = []
     prime_to_color = {"unknot": "blue", "6_2": "red", "9_27": "pink", "12n_8": "green"}
+    prime_to_crossing_number = {"unknot": 1, "6_2": 6, "9_27": 9, "12n_8": 12}
 
     with ProcessPoolExecutor(max_workers=2) as executor:
         futures = {executor.submit(compute_braid, key): key for key in benchmark_braids}
 
         for future in tqdm.tqdm(as_completed(futures), total=len(benchmark_braids)):
             x_len, braid_len, key = future.result()
-            max_score += x_len - 1
-            score += braid_len - 1
             prime = key.split(":")[0]
+            max_score += x_len - prime_to_crossing_number[prime]
+            score += braid_len - prime_to_crossing_number[prime]
             X.append(x_len)
             Y.append(braid_len)
             Z.append(prime_to_color[prime])
@@ -82,16 +83,11 @@ if __name__ == "__main__":
     print("Score =", 1 - score / max_score)
 
     plt.title("Crossing number prediction of knots")
-    plt.vlines(1, 0, 100, colors='blue', linestyles='dashed')
-    plt.vlines(6, 0, 100, colors='red', linestyles='dashed')
-    plt.vlines(9, 0, 100, colors='pink', linestyles='dashed')
-    plt.vlines(12, 0, 100, colors='green', linestyles='dashed')
+    for prime in prime_to_crossing_number.keys():
+        plt.vlines(prime_to_crossing_number[prime], -5, 100, colors=prime_to_color[prime], linestyles='dashed')
+        plt.vlines(-100, -100, -200, colors=prime_to_color[prime], linestyles='solid', label=prime)
 
     plt.vlines(-100, -100, -200, colors='black', linestyles='dashed', label="True crossing number")
-    plt.vlines(-100, -100, -200, colors='blue', linestyles='solid', label="unknot")
-    plt.vlines(-100, -100, -200, colors='red', linestyles='solid', label="6_2")
-    plt.vlines(-100, -100, -200, colors='pink', linestyles='solid', label="9_27")
-    plt.vlines(-100, -100, -200, colors='green', linestyles='solid', label="12n_8")
 
     plt.scatter(Y, X, c=Z)
     plt.xlim(-5, 90)
