@@ -694,19 +694,24 @@ class TestBraidPerformableMoves:
 
 class TestBraidCompositeDetection:
     prime_knots = pd.read_csv("./knpy/data_knots/prime_knots_in_braid_notation.csv")
+
     def test_is_prime(self):
         rng = np.random.RandomState(42)
         braids = self.prime_knots["Braid Notation"].values
         
-        for i in range(50):
+        for z in range(50):
             braid = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
-            assert cd.detect_composite(braid) == False
+            for i in range(len(braid.notation())):
+                assert cd.detect_composite(cd.circular_shift(braid, i)) == False
     
     def test_is_composite(self):
         rng = np.random.RandomState(42)
         braids = self.prime_knots["Braid Notation"].values
-        for i in range(50):
+        for z in range(50):
             braid1 = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
             braid2 = Braid(list(map(int, braids[rng.randint(0, len(braids))][1:-1].split(";"))))
-            combined_braid = cd.combine_braids(braid1, braid2)
-            assert cd.detect_composite(combined_braid) == True
+
+            for i in range(len(braid1.notation())):
+                for j in range(len(braid2.notation())):
+                    combined_braid = cd.combine_braids(cd.circular_shift(braid1,i), cd.circular_shift(braid2,j))
+                    assert cd.detect_composite(combined_braid) == True

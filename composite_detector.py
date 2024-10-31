@@ -40,3 +40,7 @@ def combine_braids(braid1, braid2):
     combined_notation[len(braid1)+1:] = [x + max1 + 1 if x > 0 else x - (max1 + 1) for x in braid2]
 
     return kn.Braid(combined_notation)
+
+def circular_shift(braid, shift):
+    shift %= len(braid.notation())
+    return kn.Braid(np.concatenate((braid.notation()[shift:], braid.notation()[:shift])))
